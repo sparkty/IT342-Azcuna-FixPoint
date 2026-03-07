@@ -222,6 +222,7 @@
   flex-direction: column;
   justify-content: center;
   padding: 60px 48px;
+  overflow: visible;
 }
 
 /* Auth Tab Switcher */
@@ -438,4 +439,58 @@
   background: rgba(16, 185, 129, 0.1);
   border: 1px solid var(--success);
   color: var(--success);
+}
+
+
+/* Password Tooltip */
+.input-tooltip-wrapper {
+  position: relative;
+}
+
+.password-tooltip {
+  display: none;
+  position: absolute;
+  right: 105%;
+  top: 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+  width: 200px;
+  z-index: 10;
+}
+
+.input-tooltip-wrapper:focus-within .password-tooltip {
+  display: block;
+}
+
+.tooltip-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.tooltip-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tooltip-list li {
+  font-size: 11px;
+  color: var(--text2);
+  padding-left: 12px;
+  position: relative;
+}
+
+.tooltip-list li::before {
+  content: '›';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
 }

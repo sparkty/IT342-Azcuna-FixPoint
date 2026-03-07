@@ -171,12 +171,27 @@ const LoginRegisterScreen = () => {
   const handleForgotPassword = () => console.log('Forgot password clicked');
 
   const switchTab = (tab) => {
-    setActiveTab(tab);
-    setError('');
-    setSuccess('');
-    setLoginErrors({ email: '', password: '' });
-    setRegisterErrors({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '' });
-  };
+  setActiveTab(tab);
+  setError('');
+  setSuccess('');
+
+  // Clear form errors
+  setLoginErrors({ email: '', password: '' });
+  setRegisterErrors({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '' });
+
+  // Clear form inputs
+  if (tab === 'login') {
+    setLoginForm({ email: '', password: '' });
+  } else if (tab === 'register') {
+    setRegisterForm({
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
+    });
+  }
+};
 
   return (
     <div className="login-screen-container">
@@ -234,7 +249,7 @@ const LoginRegisterScreen = () => {
 
             {/* Login Form */}
             {activeTab === 'login' && (
-              <form onSubmit={handleLoginSubmit} className="auth-form">
+              <form onSubmit={handleLoginSubmit} className="auth-form" autoComplete="off">
                 <div className="auth-form-title">Welcome back</div>
                 <div className="auth-form-sub">Sign in to your FixPoint account.</div>
 
@@ -243,6 +258,7 @@ const LoginRegisterScreen = () => {
                   <input
                     type="email"
                     name="email"
+                    autoComplete="off"
                     className={`form-input ${loginErrors.email ? 'input-error' : ''}`}
                     placeholder="you@example.com"
                     value={loginForm.email}
@@ -256,6 +272,7 @@ const LoginRegisterScreen = () => {
                   <input
                     type="password"
                     name="password"
+                    autoComplete="off"
                     className={`form-input ${loginErrors.password ? 'input-error' : ''}`}
                     placeholder="••••••••"
                     value={loginForm.password}
@@ -290,7 +307,7 @@ const LoginRegisterScreen = () => {
 
             {/* Register Form */}
             {activeTab === 'register' && (
-              <form onSubmit={handleRegisterSubmit} className="auth-form">
+              <form onSubmit={handleRegisterSubmit} className="auth-form" autoComplete="off">
                 <div className="auth-form-title">Create account</div>
                 <div className="auth-form-sub">Join FixPoint — it's free and secure.</div>
 
@@ -326,6 +343,7 @@ const LoginRegisterScreen = () => {
                   <input
                     type="email"
                     name="email"
+                    autoComplete="off"
                     className={`form-input ${registerErrors.email ? 'input-error' : ''}`}
                     placeholder="you@example.com"
                     value={registerForm.email}
@@ -336,16 +354,23 @@ const LoginRegisterScreen = () => {
 
                 <div className="form-group">
                   <label className="form-label">
-                    PASSWORD <span className="password-hint">MIN 8 CHARS</span>
+                    PASSWORD
                   </label>
                   <input
                     type="password"
                     name="password"
+                    autoComplete="off"
                     className={`form-input ${registerErrors.password ? 'input-error' : ''}`}
                     placeholder="••••••••"
                     value={registerForm.password}
                     onChange={handleRegisterChange}
                   />
+                  <div className="password-tooltip">
+                    <div className="tooltip-title">PASSWORD REQUIREMENTS</div>
+                    <ul className="tooltip-list">
+                      <li>At least 8 characters</li>
+                    </ul>
+                  </div>
                   {registerErrors.password && <span className="field-error">{registerErrors.password}</span>}
                 </div>
 
@@ -354,6 +379,7 @@ const LoginRegisterScreen = () => {
                   <input
                     type="password"
                     name="confirmPassword"
+                    autoComplete="off"
                     className={`form-input ${registerErrors.confirmPassword ? 'input-error' : ''}`}
                     placeholder="••••••••"
                     value={registerForm.confirmPassword}
