@@ -1,17 +1,23 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api/v1',
-  headers: { 'Content-Type': 'application/json' }
+  baseURL: 'http://localhost:8080/api/v1',
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
 
+// Attach JWT token to every request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('accessToken');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
-// Redirect to login on expired/invalid token
+// Handle expired/invalid tokens
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -25,19 +31,21 @@ api.interceptors.response.use(
   }
 );
 
+// AUTH API
 export const authService = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
 };
 
+// ISSUE API
 export const issueService = {
-  // GET /issues — users see own; admins see all
+  // GET /issues — user sees own, admin sees all
   getMyIssues: (params = {}) => api.get('/issues', { params }),
 
   // GET /issues/:id
   getIssueById: (id) => api.get(`/issues/${id}`),
 
-  // POST /issues — must send as multipart/form-data
+  // POST /issues — multipart/form-data
   createIssue: (formData) =>
     api.post('/issues', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -46,7 +54,7 @@ export const issueService = {
   // PUT /issues/:id
   updateIssue: (id, data) => api.put(`/issues/${id}`, data),
 
-  // DELETE /issues/:id (admin only)
+  // DELETE /issues/:id
   deleteIssue: (id) => api.delete(`/issues/${id}`),
 };
 

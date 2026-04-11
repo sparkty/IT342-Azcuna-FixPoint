@@ -1,21 +1,20 @@
 package edu.cit.azcuna.fixpoint.controller;
 
-import com.fixpoint.dto.CreateIssueRequest;
-import com.fixpoint.dto.IssueResponse;
-import com.fixpoint.dto.UpdateIssueRequest;
-import com.fixpoint.entity.Issue;
-import com.fixpoint.entity.User;
-import com.fixpoint.service.IssueService;
-import jakarta.validation.Valid;
+import edu.cit.azcuna.fixpoint.dto.*;
+import edu.cit.azcuna.fixpoint.entity.User;
+import edu.cit.azcuna.fixpoint.repository.UserRepository;
+import edu.cit.azcuna.fixpoint.service.IssueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -24,79 +23,60 @@ import java.util.Map;
 public class IssueController {
 
     private final IssueService issueService;
+    private final UserRepository userRepository;
 
-    // ── POST /api/v1/issues ────────────────────────────────────────────────────
+    private User getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+    }
+
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<Map<String, Object>> create(
-            @Valid @ModelAttribute CreateIssueRequest request,
-            @RequestPart(value = "attachment", required = false) MultipartFile attachment,
-            @AuthenticationPrincipal User currentUser
+            @ModelAttribute CreateIssueRequest request,
+            @RequestPart(value = "attachment", required = false) MultipartFile attachment
     ) {
-        IssueResponse data = issueService.create(request, attachment, currentUser);
-        return ResponseEntity.status(HttpStatus.CREATED).body(success(data));
+        User currentUser = getCurrentUser();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(success(issueService.create(request, attachment, currentUser)));
     }
 
-    // ── GET /api/v1/issues ─────────────────────────────────────────────────────
     @GetMapping
     public ResponseEntity<Map<String, Object>> list(
-            @RequestParam(required = false) Issue.Status status,
-            @RequestParam(required = false) Issue.Category category,
+            @RequestParam(required = false) edu.cit.azcuna.fixpoint.entity.Issue.Status status,
+            @RequestParam(required = false) edu.cit.azcuna.fixpoint.entity.Issue.Category category,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @AuthenticationPrincipal User currentUser
+            @RequestParam(defaultValue = "10") int size
     ) {
-        Page<IssueResponse> result = issueService.list(status, category, page, size, currentUser);
+        User currentUser = getCurrentUser();
 
-        Map<String, Object> paged = Map.of(
-                "content",       result.getContent(),
-                "totalPages",    result.getTotalPages(),
+        Page<IssueResponse> result =
+                issueService.list(status, category, page, size, currentUser);
+
+        Map<String, Object> data = Map.of(
+                "content", result.getContent(),
+                "totalPages", result.getTotalPages(),
                 "totalElements", result.getTotalElements(),
-                "currentPage",   result.getNumber()
+                "currentPage", result.getNumber()
         );
-        return ResponseEntity.ok(success(paged));
+        
+        return ResponseEntity.ok(success(data));
     }
 
-    // ── GET /api/v1/issues/{id} ────────────────────────────────────────────────
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getById(
-            @PathVariable Long id,
-            @AuthenticationPrincipal User currentUser
-    ) {
-        return ResponseEntity.ok(success(issueService.getById(id, currentUser)));
+    public ResponseEntity<Map<String, Object>> getById(@PathVariable Long id) {
+        User currentUser = getCurrentUser();
+        IssueResponse issue = issueService.getById(id, currentUser);
+        return ResponseEntity.ok(success(issue));
     }
 
-    // ── PUT /api/v1/issues/{id} ────────────────────────────────────────────────
-    @PutMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> update(
-            @PathVariable Long id,
-            @RequestBody UpdateIssueRequest request,
-            @AuthenticationPrincipal User currentUser
-    ) {
-        return ResponseEntity.ok(success(issueService.update(id, request, currentUser)));
-    }
-
-    // ── DELETE /api/v1/issues/{id} ─────────────────────────────────────────────
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> delete(
-            @PathVariable Long id,
-            @AuthenticationPrincipal User currentUser
-    ) {
-        issueService.delete(id, currentUser);
-        return ResponseEntity.ok(Map.of(
-                "success",   true,
-                "data",      null,
-                "error",     null,
-                "timestamp", Instant.now().toString()
-        ));
-    }
-
-    // ── Helper ─────────────────────────────────────────────────────────────────
     private Map<String, Object> success(Object data) {
-        return Map.of(
-                "success",   true,
-                "data",      data,
-                "error",     null,
-                "timestamp", Instant.now().toString()
-        );
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("data", data != null ? data : Map.of());
+        response.put("error", null);
+        response.put("timestamp", Instant.now().toString());
+        return response;
     }
 }

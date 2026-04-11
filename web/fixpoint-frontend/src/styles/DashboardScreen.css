@@ -341,10 +341,11 @@
 
 .table-header {
   display: grid;
-  grid-template-columns: 40px 1fr 120px 100px 110px 90px 80px;
+  grid-template-columns: 50px minmax(250px, 1fr) 100px 90px 100px 100px 70px;
   padding: 10px 16px;
   border-bottom: 1px solid var(--border);
   background: var(--surface2);
+  gap: 8px;
 }
 
 .th {
@@ -357,12 +358,13 @@
 
 .issue-row {
   display: grid;
-  grid-template-columns: 40px 1fr 120px 100px 110px 90px 80px;
+  grid-template-columns: 50px minmax(250px, 1fr) 100px 90px 100px 100px 70px;
   padding: 14px 16px;
   border-bottom: 1px solid var(--border);
   align-items: center;
   transition: background 0.1s;
   cursor: pointer;
+  gap: 8px;
 }
 
 .issue-row:hover {
@@ -375,9 +377,17 @@
   color: var(--text3);
 }
 
+.issue-title-cell {
+  min-width: 0; /* Allows text truncation */
+  overflow: hidden;
+}
+
 .issue-title-text {
   font-size: 13px;
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .issue-desc {
@@ -387,7 +397,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 300px;
+  width: 100%;
 }
 
 .issue-date {

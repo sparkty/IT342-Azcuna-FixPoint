@@ -243,7 +243,7 @@ const IssueDetailScreen = () => {
             {/* Top Bar */}
             <div className="app-topbar">
               <div>
-                <div className="page-title">Issue #{id}</div>
+                <div className="page-title">Issue Details</div>
                 <div className="page-sub">{issue?.title || 'Loading...'}</div>
               </div>
               <div className="topbar-actions">

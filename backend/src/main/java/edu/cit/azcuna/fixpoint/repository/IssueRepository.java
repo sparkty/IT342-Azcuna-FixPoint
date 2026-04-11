@@ -1,7 +1,7 @@
 package edu.cit.azcuna.fixpoint.repository;
 
-import com.fixpoint.entity.Issue;
-import com.fixpoint.entity.User;
+import edu.cit.azcuna.fixpoint.entity.Issue;
+import edu.cit.azcuna.fixpoint.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,11 +1,11 @@
 package edu.cit.azcuna.fixpoint.service;
 
-import com.fixpoint.dto.CreateIssueRequest;
-import com.fixpoint.dto.IssueResponse;
-import com.fixpoint.dto.UpdateIssueRequest;
-import com.fixpoint.entity.Issue;
-import com.fixpoint.entity.User;
-import com.fixpoint.repository.IssueRepository;
+import edu.cit.azcuna.fixpoint.dto.CreateIssueRequest;
+import edu.cit.azcuna.fixpoint.dto.IssueResponse;
+import edu.cit.azcuna.fixpoint.dto.UpdateIssueRequest;
+import edu.cit.azcuna.fixpoint.entity.Issue;
+import edu.cit.azcuna.fixpoint.entity.User;
+import edu.cit.azcuna.fixpoint.repository.IssueRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;

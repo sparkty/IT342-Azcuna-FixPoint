@@ -1,6 +1,6 @@
 package edu.cit.azcuna.fixpoint.dto;
 
-import com.fixpoint.entity.Issue;
+import edu.cit.azcuna.fixpoint.entity.Issue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

@@ -1,4 +1,3 @@
-// DashboardScreen.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { issueService } from '../services/api';
@@ -28,26 +27,25 @@ const DashboardScreen = () => {
   }, []);
 
   const fetchIssues = async () => {
-  setLoading(true);
-  setError('');
-  try {
-    const response = await issueService.getMyIssues({ page: 0, size: 50 });
-    const issuesData = response.data.data?.content ?? response.data.data ?? [];
-    setIssues(issuesData);
-    calculateStats(issuesData);
-  } catch (err) {
-    const status = err.response?.status;
-    // 404 = endpoint not built yet, just show empty list silently
-    if (!status || status === 404) {
-      setIssues([]);
-      calculateStats([]);
-    } else {
-      setError('Failed to load issues. Make sure the backend is running.');
+    setLoading(true);
+    setError('');
+    try {
+      const response = await issueService.getMyIssues({ page: 0, size: 50 });
+      const issuesData = response.data.data?.content ?? response.data.data ?? [];
+      setIssues(issuesData);
+      calculateStats(issuesData);
+    } catch (err) {
+      const status = err.response?.status;
+      if (!status || status === 404) {
+        setIssues([]);
+        calculateStats([]);
+      } else {
+        setError('Failed to load issues. Make sure the backend is running.');
+      }
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const calculateStats = (issuesData) => {
     const total = issuesData.length;
@@ -58,9 +56,8 @@ const DashboardScreen = () => {
   };
 
   const handleViewIssue = (issueId) => {
-  const cleanId = issueId.replace('#', '');
-  navigate(`/issue/${cleanId}`);
-};
+  navigate(`/issue/${issueId}`);
+  };
 
   const handleNewIssue = () => {
     navigate('/create-issue');
@@ -291,9 +288,9 @@ const DashboardScreen = () => {
                     No issues found. Click "+ New Issue" to create one.
                   </div>
                 ) : (
-                  filteredIssues.map((issue) => (
+                  filteredIssues.map((issue, index) => (
                     <div key={issue.id} className="issue-row">
-                      <div className="issue-id">#{issue.id}</div>
+                      <div className="issue-id">#{index + 1}</div>
                       <div className="issue-title-cell">
                         <div className="issue-title-text">{issue.title}</div>
                         <div className="issue-desc">{issue.description?.substring(0, 100)}...</div>

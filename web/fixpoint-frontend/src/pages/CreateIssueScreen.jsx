@@ -1,4 +1,3 @@
-// CreateIssueScreen.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { issueService } from '../services/api';
@@ -86,27 +85,30 @@ const CreateIssueScreen = () => {
     setError('');
     
     try {
-  const formPayload = new FormData();
-  formPayload.append('title', formData.title.trim());
-  formPayload.append('description', formData.description.trim());
-  formPayload.append('category', formData.category.toUpperCase());
-  formPayload.append('priority', formData.priority.toUpperCase());
-  // Attach file if present
-  if (attachments.length > 0) {
-    formPayload.append('attachment', attachments[0].file);
-  }
+      const formPayload = new FormData();
+      formPayload.append('title', formData.title.trim());
+      formPayload.append('description', formData.description.trim());
+      formPayload.append('category', formData.category); // Already in correct format
+      formPayload.append('priority', formData.priority);
+      
+      // Attach file if present
+      if (attachments.length > 0) {
+        formPayload.append('attachment', attachments[0].file);
+      }
 
-  const response = await issueService.createIssue(formPayload);
-  const created = response.data.data;
+      const response = await issueService.createIssue(formPayload);
+      const created = response.data.data;
 
-  setSuccess('Issue created successfully!');
-  setFormData({ title: '', category: '', priority: 'MEDIUM', description: '' });
-  setAttachments([]);
+      setSuccess('Issue created successfully!');
+      setFormData({ title: '', category: '', priority: 'MEDIUM', description: '' });
+      setAttachments([]);
 
-    setTimeout(() => navigate(`/issue/${created.id}`), 1500);
+      setTimeout(() => navigate(`/issue/${created.id}`), 1500);
     } catch (err) {
       const msg = err.response?.data?.error?.message ?? 'Failed to create issue. Please try again.';
       setError(msg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -253,12 +255,10 @@ const CreateIssueScreen = () => {
                           required
                         >
                           <option value="">Select category…</option>
-                          <option>Bug</option>
-                          <option>Feature</option>
-                          <option>Access</option>
-                          <option>Performance</option>
-                          <option>UI</option>
-                          <option>Other</option>
+                          <option value="TECHNICAL">Technical</option>
+                          <option value="BILLING">Billing</option>
+                          <option value="GENERAL">General</option>
+                          <option value="OTHER">Other</option>
                         </select>
                       </div>
                       <div className="form-group">

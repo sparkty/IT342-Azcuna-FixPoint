@@ -1,6 +1,6 @@
 package edu.cit.azcuna.fixpoint.controller;
 
-import com.fixpoint.service.FileStorageService;
+import edu.cit.azcuna.fixpoint.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
