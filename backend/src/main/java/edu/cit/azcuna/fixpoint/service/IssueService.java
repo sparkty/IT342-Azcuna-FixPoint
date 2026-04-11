@@ -12,8 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -21,8 +23,8 @@ public class IssueService {
 
     private final IssueRepository issueRepository;
     private final FileStorageService fileStorageService;
+    private final NotificationService notificationService; // ← added
 
-    // ── Create ─────────────────────────────────────────────────────────────────
     public IssueResponse create(CreateIssueRequest request, MultipartFile attachment, User currentUser) {
         Issue issue = Issue.builder()
                 .title(request.getTitle())
@@ -48,11 +50,11 @@ public class IssueService {
         return IssueResponse.from(issueRepository.save(issue));
     }
 
-    // ── List ───────────────────────────────────────────────────────────────────
+    @Transactional(readOnly = true)
     public Page<IssueResponse> list(Issue.Status status, Issue.Category category,
                                     int page, int size, User currentUser) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        boolean isAdmin = currentUser.getRole().name().equals("ADMIN");
+        boolean isAdmin = currentUser.getRole() == User.Role.ADMIN;
         Page<Issue> result;
 
         if (isAdmin) {
@@ -78,35 +80,42 @@ public class IssueService {
         return result.map(IssueResponse::from);
     }
 
-    // ── Get by ID ──────────────────────────────────────────────────────────────
+    @Transactional(readOnly = true)
     public IssueResponse getById(Long id, User currentUser) {
-        Issue issue = findAndAuthorize(id, currentUser);
-        return IssueResponse.from(issue);
+        return IssueResponse.from(findAndAuthorize(id, currentUser));
     }
 
-    // ── Update ─────────────────────────────────────────────────────────────────
     public IssueResponse update(Long id, UpdateIssueRequest request, User currentUser) {
         Issue issue = findAndAuthorize(id, currentUser);
-        boolean isAdmin = currentUser.getRole().name().equals("ADMIN");
+        boolean isAdmin = currentUser.getRole() == User.Role.ADMIN;
 
         if (request.getDescription() != null)
             issue.setDescription(request.getDescription());
 
-        // Only admins can change status
         if (request.getStatus() != null) {
-            if (!isAdmin) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can change issue status.");
+            if (!isAdmin)
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can change issue status.");
+
+            Issue.Status oldStatus = issue.getStatus(); // ← capture before change
             issue.setStatus(request.getStatus());
+
             if (request.getStatus() == Issue.Status.RESOLVED)
-                issue.setResolvedAt(java.time.LocalDateTime.now());
+                issue.setResolvedAt(LocalDateTime.now());
+
+            Issue saved = issueRepository.save(issue);
+
+            // ── Fire notification to issue owner ──────────────────────────────
+            notificationService.createStatusUpdateNotification(saved, oldStatus, request.getStatus());
+
+            return IssueResponse.from(saved);
         }
 
         return IssueResponse.from(issueRepository.save(issue));
     }
 
-    // ── Delete ─────────────────────────────────────────────────────────────────
     public void delete(Long id, User currentUser) {
-        boolean isAdmin = currentUser.getRole().name().equals("ADMIN");
-        if (!isAdmin) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can delete issues.");
+        if (currentUser.getRole() != User.Role.ADMIN)
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can delete issues.");
 
         Issue issue = issueRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Issue not found."));
@@ -117,12 +126,11 @@ public class IssueService {
         issueRepository.delete(issue);
     }
 
-    // ── Helper ─────────────────────────────────────────────────────────────────
     private Issue findAndAuthorize(Long id, User currentUser) {
         Issue issue = issueRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Issue not found."));
 
-        boolean isAdmin = currentUser.getRole().name().equals("ADMIN");
+        boolean isAdmin = currentUser.getRole() == User.Role.ADMIN;
         boolean isOwner = issue.getUser().getId().equals(currentUser.getId());
 
         if (!isAdmin && !isOwner)

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { issueService } from '../services/api';
 import '../styles/DashboardScreen.css';
+import Sidebar from '../components/Sidebar';
 
 const DashboardScreen = () => {
   const navigate = useNavigate();
@@ -56,11 +57,15 @@ const DashboardScreen = () => {
   };
 
   const handleViewIssue = (issueId) => {
-  navigate(`/issue/${issueId}`);
+    navigate(`/issue/${issueId}`);
   };
 
   const handleNewIssue = () => {
     navigate('/create-issue');
+  };
+
+  const handleNotifications = () => {
+    navigate('/notifications');
   };
 
   const handleLogout = () => {
@@ -152,41 +157,7 @@ const DashboardScreen = () => {
 
       <div className="content">
         <div className="app-shell">
-          <aside className="sidebar">
-            <div className="sidebar-user">
-              <div className="sidebar-avatar">{userInitials}</div>
-              <div>
-                <div className="sidebar-username">{userName}</div>
-                <div className="sidebar-role">{user.role || 'USER'}</div>
-              </div>
-            </div>
-            <div className="sidebar-nav">
-              <div className="sidebar-section">MAIN</div>
-              <div className="sidebar-item active">
-                <span className="sidebar-icon">📋</span> My Issues
-                <span className="sidebar-count red">{issues.length}</span>
-              </div>
-              <div className="sidebar-item" onClick={handleNewIssue}>
-                <span className="sidebar-icon">➕</span> New Issue
-              </div>
-              <div className="sidebar-item">
-                <span className="sidebar-icon">🔔</span> Notifications
-                <span className="sidebar-count">0</span>
-              </div>
-              <div className="sidebar-section" style={{ marginTop: '12px' }}>ACCOUNT</div>
-              <div className="sidebar-item">
-                <span className="sidebar-icon">👤</span> Profile
-              </div>
-              <div className="sidebar-item">
-                <span className="sidebar-icon">⚙️</span> Settings
-              </div>
-            </div>
-            <div className="sidebar-bottom">
-              <div className="sidebar-item" onClick={handleLogout}>
-                <span className="sidebar-icon">🚪</span> Logout
-              </div>
-            </div>
-          </aside>
+          <Sidebar />
 
           <div className="main-area">
             <div className="app-topbar">
@@ -280,7 +251,6 @@ const DashboardScreen = () => {
                   <div className="th">PRIORITY</div>
                   <div className="th">STATUS</div>
                   <div className="th">CREATED</div>
-                  <div className="th">ACTION</div>
                 </div>
 
                 {filteredIssues.length === 0 ? (
@@ -289,7 +259,12 @@ const DashboardScreen = () => {
                   </div>
                 ) : (
                   filteredIssues.map((issue, index) => (
-                    <div key={issue.id} className="issue-row">
+                    <div 
+                      key={issue.id} 
+                      className="issue-row"
+                      onClick={() => handleViewIssue(issue.id)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <div className="issue-id">#{index + 1}</div>
                       <div className="issue-title-cell">
                         <div className="issue-title-text">{issue.title}</div>
@@ -309,11 +284,6 @@ const DashboardScreen = () => {
                         </span>
                       </div>
                       <div className="issue-date">{issue.createdAt ? new Date(issue.createdAt).toLocaleDateString() : '-'}</div>
-                      <div>
-                        <button className="action-btn" onClick={() => handleViewIssue(issue.id)}>
-                          View
-                        </button>
-                      </div>
                     </div>
                   ))
                 )}

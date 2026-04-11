@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/api';
 import '../styles/LoginRegisterScreen.css';
+import Sidebar from '../components/Sidebar';
 
 const LoginRegisterScreen = () => {
   const navigate = useNavigate();

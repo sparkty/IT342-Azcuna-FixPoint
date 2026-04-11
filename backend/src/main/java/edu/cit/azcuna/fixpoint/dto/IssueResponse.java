@@ -19,6 +19,8 @@ public class IssueResponse {
     private Long userId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String reporterName;
+    private String reporterInitials;
 
     @Getter @Builder
     public static class AttachmentInfo {
@@ -37,16 +39,21 @@ public class IssueResponse {
         }
 
         return IssueResponse.builder()
-                .id(issue.getId())
-                .title(issue.getTitle())
-                .description(issue.getDescription())
-                .category(issue.getCategory())
-                .status(issue.getStatus())
-                .priority(issue.getPriority())
-                .attachment(attachmentInfo)
-                .userId(issue.getUser().getId())
-                .createdAt(issue.getCreatedAt())
-                .updatedAt(issue.getUpdatedAt())
-                .build();
+            .id(issue.getId())
+            .title(issue.getTitle())
+            .description(issue.getDescription())
+            .category(issue.getCategory())
+            .status(issue.getStatus())
+            .priority(issue.getPriority())
+            .attachment(attachmentInfo)
+            .userId(issue.getUser().getId())
+            .reporterName(issue.getUser().getFirstname() + " " + issue.getUser().getLastname())
+            .reporterInitials(
+                String.valueOf(issue.getUser().getFirstname().charAt(0)).toUpperCase() +
+                String.valueOf(issue.getUser().getLastname().charAt(0)).toUpperCase()
+            )
+            .createdAt(issue.getCreatedAt())
+            .updatedAt(issue.getUpdatedAt())
+            .build();
     }
 }

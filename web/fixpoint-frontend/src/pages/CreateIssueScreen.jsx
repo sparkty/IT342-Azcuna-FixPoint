@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { issueService } from '../services/api';
 import '../styles/CreateIssueScreen.css';
+import Sidebar from '../components/Sidebar';
 
 const CreateIssueScreen = () => {
   const navigate = useNavigate();
@@ -160,40 +161,7 @@ const CreateIssueScreen = () => {
 
       <div className="content">
         <div className="app-shell">
-          <aside className="sidebar">
-            <div className="sidebar-user">
-              <div className="sidebar-avatar">{userInitials}</div>
-              <div>
-                <div className="sidebar-username">{userName}</div>
-                <div className="sidebar-role">{user.role || 'USER'}</div>
-              </div>
-            </div>
-            <div className="sidebar-nav">
-              <div className="sidebar-section">MAIN</div>
-              <div className="sidebar-item" onClick={handleMyIssues}>
-                <span className="sidebar-icon">📋</span> My Issues
-              </div>
-              <div className="sidebar-item active" onClick={handleNewIssue}>
-                <span className="sidebar-icon">➕</span> New Issue
-              </div>
-              <div className="sidebar-item" onClick={handleNotifications}>
-                <span className="sidebar-icon">🔔</span> Notifications
-                <span className="sidebar-count">0</span>
-              </div>
-              <div className="sidebar-section" style={{ marginTop: '12px' }}>ACCOUNT</div>
-              <div className="sidebar-item" onClick={handleProfile}>
-                <span className="sidebar-icon">👤</span> Profile
-              </div>
-              <div className="sidebar-item" onClick={handleSettings}>
-                <span className="sidebar-icon">⚙️</span> Settings
-              </div>
-            </div>
-            <div className="sidebar-bottom">
-              <div className="sidebar-item" onClick={handleLogout}>
-                <span className="sidebar-icon">🚪</span> Logout
-              </div>
-            </div>
-          </aside>
+          <Sidebar />
 
           <div className="main-area">
             <div className="app-topbar">

@@ -79,4 +79,20 @@ public class IssueController {
         response.put("timestamp", Instant.now().toString());
         return response;
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> update(
+            @PathVariable Long id,
+            @RequestBody UpdateIssueRequest request
+    ) {
+        User currentUser = getCurrentUser();
+        return ResponseEntity.ok(success(issueService.update(id, request, currentUser)));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> delete(@PathVariable Long id) {
+        User currentUser = getCurrentUser();
+        issueService.delete(id, currentUser);
+        return ResponseEntity.ok(success("Issue deleted successfully."));
+    }
 }

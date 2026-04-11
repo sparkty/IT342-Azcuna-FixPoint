@@ -1,8 +1,8 @@
-// IssueDetailScreen.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { issueService } from '../services/api';
+import { issueService, deleteRequestService } from '../services/api';
 import '../styles/IssueDetailScreen.css';
+import Sidebar from '../components/Sidebar';
 
 const IssueDetailScreen = () => {
   const navigate = useNavigate();
@@ -15,43 +15,57 @@ const IssueDetailScreen = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('');
 
+  const [deleteRequest, setDeleteRequest] = useState(null);   // pending request data
+  const [showDeleteForm, setShowDeleteForm] = useState(false); // toggle inline form
+  const [deleteReason, setDeleteReason] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteMsg, setDeleteMsg] = useState('');
+  
   // Fetch issue on component mount
   useEffect(() => {
     fetchIssue();
   }, [id]);
 
   const fetchIssue = async () => {
-  setLoading(true);
-  setError('');
-  try {
-    const response = await issueService.getIssueById(id);
-    const issueData = response.data.data;
-    setIssue(issueData);
-    setSelectedStatus(issueData.status);
-  } catch (err) {
-    if (err.response?.status === 403) {
-      setError('You do not have permission to view this issue.');
-    } else {
-      setError('Failed to load issue details.');
+    setLoading(true);
+    setError('');
+    try {
+      const response = await issueService.getIssueById(id);
+      const issueData = response.data.data;
+      setIssue(issueData);
+      setSelectedStatus(issueData.status);
+      
+      // Fetch any pending delete request for this issue
+      try {
+        const drRes = await deleteRequestService.getPending(id);
+        setDeleteRequest(drRes.data.data ?? null);
+      } catch {
+        // No pending request — that's fine
+      }
+    } catch (err) {
+      if (err.response?.status === 403) {
+        setError('You do not have permission to view this issue.');
+      } else {
+        setError('Failed to load issue details.');
+      }
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleStatusUpdate = async (newStatus) => {
-  setUpdatingStatus(true);
-  try {
-    const response = await issueService.updateIssue(id, { status: newStatus });
-    const updated = response.data.data;
-    setIssue(updated);
-    setSelectedStatus(updated.status);
-  } catch (err) {
-    setError('Failed to update status.');
-  } finally {
-    setUpdatingStatus(false);
-  }
-};
+    setUpdatingStatus(true);
+    try {
+      const response = await issueService.updateIssue(id, { status: newStatus });
+      const updated = response.data.data;
+      setIssue(updated);
+      setSelectedStatus(updated.status);
+    } catch (err) {
+      setError('Failed to update status.');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
@@ -70,6 +84,67 @@ const IssueDetailScreen = () => {
       setNewComment('');
     } catch (err) {
       setError('Failed to add comment');
+    }
+  };
+
+  const handleSubmitDeleteRequest = async () => {
+
+    console.log('=== SUBMITTING DELETE REQUEST ===');
+  console.log('Issue ID:', id);
+  console.log('Reason:', deleteReason);
+  console.log('User:', user);
+  console.log('User ID:', user.id);
+  console.log('Issue User ID:', issue?.userId);
+  console.log('Is Owner:', issue?.userId === user.id);
+
+
+
+    if (!deleteReason.trim()) {
+      setDeleteMsg('Please provide a reason.');
+      return;
+    }
+    setDeleteLoading(true);
+    setDeleteMsg('');
+    try {
+      await deleteRequestService.submit(id, deleteReason);
+      setDeleteMsg('✓ Deletion request submitted. An admin will review it shortly.');
+      setShowDeleteForm(false);
+      setDeleteReason('');
+      // Refresh to show the pending state
+      const drRes = await deleteRequestService.getPending(id);
+      setDeleteRequest(drRes.data.data ?? null);
+    } catch (err) {
+      const msg = err.response?.data?.error?.message ?? 'Failed to submit request.';
+      setDeleteMsg(msg);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleApprove = async () => {
+    if (!deleteRequest) return;
+    setDeleteLoading(true);
+    try {
+      await deleteRequestService.approve(deleteRequest.id);
+      navigate('/dashboard'); // issue is gone, go back
+    } catch (err) {
+      setDeleteMsg('Failed to approve deletion.');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleDecline = async () => {
+    if (!deleteRequest) return;
+    setDeleteLoading(true);
+    try {
+      await deleteRequestService.decline(deleteRequest.id);
+      setDeleteRequest(null);
+      setDeleteMsg('Delete request declined. User has been notified.');
+    } catch (err) {
+      setDeleteMsg('Failed to decline request.');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -204,39 +279,7 @@ const IssueDetailScreen = () => {
       <div className="content">
         <div className="app-shell">
           {/* Sidebar Navigation */}
-          <aside className="sidebar">
-            <div className="sidebar-user">
-              <div className="sidebar-avatar">{userInitials}</div>
-              <div>
-                <div className="sidebar-username">{userName}</div>
-                <div className="sidebar-role">{user.role || 'USER'}</div>
-              </div>
-            </div>
-            <div className="sidebar-nav">
-              <div className="sidebar-section">MAIN</div>
-              <div className="sidebar-item active" onClick={handleMyIssues}>
-                <span className="sidebar-icon">📋</span> My Issues
-              </div>
-              <div className="sidebar-item" onClick={handleNewIssue}>
-                <span className="sidebar-icon">➕</span> New Issue
-              </div>
-              <div className="sidebar-item" onClick={handleNotifications}>
-                <span className="sidebar-icon">🔔</span> Notifications
-              </div>
-              <div className="sidebar-section" style={{ marginTop: '12px' }}>ACCOUNT</div>
-              <div className="sidebar-item" onClick={handleProfile}>
-                <span className="sidebar-icon">👤</span> Profile
-              </div>
-              <div className="sidebar-item" onClick={handleSettings}>
-                <span className="sidebar-icon">⚙️</span> Settings
-              </div>
-            </div>
-            <div className="sidebar-bottom">
-              <div className="sidebar-item" onClick={handleLogout}>
-                <span className="sidebar-icon">🚪</span> Logout
-              </div>
-            </div>
-          </aside>
+          <Sidebar />
 
           {/* Main Content Area */}
           <div className="main-area">
@@ -457,6 +500,114 @@ const IssueDetailScreen = () => {
                         </div>
                       </div>
                     </div>
+
+                    {/* ── Delete Request Section ─────────────────────────────────────── */}
+
+                    {/* Regular user — owns the issue, no pending request yet */}
+                    {!isAdmin && issue.userId === user.id && !deleteRequest && (
+                      <div className="form-card" style={{ borderColor: 'rgba(239,68,68,0.2)', marginTop: '16px' }}>
+                        <div className="form-card-title">Danger Zone</div>
+
+                        {!showDeleteForm ? (
+                          <button
+                            className="btn-sm"
+                            style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)' }}
+                            onClick={() => setShowDeleteForm(true)}
+                          >
+                            Request Deletion
+                          </button>
+                        ) : (
+                          <div>
+                            <div className="form-label" style={{ marginBottom: '8px' }}>
+                              REASON FOR DELETION *
+                            </div>
+                            <textarea
+                              className="comment-input-area"
+                              placeholder="Explain why you want this issue deleted…"
+                              value={deleteReason}
+                              onChange={(e) => setDeleteReason(e.target.value)}
+                              rows={3}
+                            />
+                            <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                              <button
+                                className="btn-sm primary"
+                                onClick={handleSubmitDeleteRequest}
+                                disabled={deleteLoading}
+                              >
+                                {deleteLoading ? 'Submitting…' : 'Submit Request'}
+                              </button>
+                              <button
+                                className="btn-sm ghost"
+                                onClick={() => { setShowDeleteForm(false); setDeleteReason(''); setDeleteMsg(''); }}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {deleteMsg && (
+                          <div style={{ marginTop: '10px', fontSize: '12px', color: deleteMsg.startsWith('✓') ? '#10b981' : '#ef4444' }}>
+                            {deleteMsg}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Regular user — pending request already submitted */}
+                    {!isAdmin && deleteRequest && (
+                      <div className="form-card" style={{ borderColor: 'rgba(245,166,35,0.3)', marginTop: '16px' }}>
+                        <div className="form-card-title">Deletion Request Pending</div>
+                        <p style={{ fontSize: '13px', color: 'var(--text2)', marginBottom: '8px' }}>
+                          Your request is awaiting admin review.
+                        </p>
+                        <div className="form-label">YOUR REASON</div>
+                        <p style={{ fontSize: '13px', color: 'var(--text)', marginTop: '4px' }}>
+                          {deleteRequest.reason}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Admin — sees pending delete request and can approve or decline */}
+                    {isAdmin && deleteRequest && (
+                      <div className="form-card" style={{ borderColor: 'rgba(239,68,68,0.3)', marginTop: '16px' }}>
+                        <div className="form-card-title">
+                          ⚠ Pending Deletion Request
+                        </div>
+                        <div style={{ marginBottom: '12px' }}>
+                          <div className="form-label">REQUESTED BY</div>
+                          <p style={{ fontSize: '13px', color: 'var(--text)', marginTop: '4px' }}>
+                            {deleteRequest.requestedByName}
+                          </p>
+                        </div>
+                        <div style={{ marginBottom: '16px' }}>
+                          <div className="form-label">REASON</div>
+                          <p style={{ fontSize: '13px', color: 'var(--text)', marginTop: '4px', lineHeight: '1.5' }}>
+                            {deleteRequest.reason}
+                          </p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button
+                            className="btn-sm primary"
+                            style={{ background: '#ef4444' }}
+                            onClick={handleApprove}
+                            disabled={deleteLoading}
+                          >
+                            {deleteLoading ? 'Processing…' : 'Approve & Delete'}
+                          </button>
+                          <button
+                            className="btn-sm ghost"
+                            onClick={handleDecline}
+                            disabled={deleteLoading}
+                          >
+                            Decline
+                          </button>
+                        </div>
+                        {deleteMsg && (
+                          <p style={{ marginTop: '10px', fontSize: '12px', color: '#10b981' }}>{deleteMsg}</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
