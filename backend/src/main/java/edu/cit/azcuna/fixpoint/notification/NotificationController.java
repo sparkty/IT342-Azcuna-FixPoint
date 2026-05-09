@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -48,6 +50,20 @@ public class NotificationController {
     public ResponseEntity<Map<String, Object>> markAllAsRead() {
         notificationService.markAllAsRead(getCurrentUser());
         return ResponseEntity.ok(success("All notifications marked as read."));
+    }
+
+    @DeleteMapping("/read")
+    public ResponseEntity<?> deleteAllRead() {
+        User user = getCurrentUser();
+
+        notificationService.deleteAllReadNotifications(user.getId());
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "data", null,
+                "error", null,
+                "timestamp", Instant.now().toString()
+        ));
     }
 
     private Map<String, Object> success(Object data) {

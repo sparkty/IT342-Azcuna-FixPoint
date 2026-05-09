@@ -24,8 +24,8 @@ public class NotificationService {
     // ── Status update (existing) ───────────────────────────────────────────────
     public void createStatusUpdateNotification(Issue issue, Issue.Status oldStatus, Issue.Status newStatus) {
         String message = String.format(
-                "Your issue #%d \"%s\" status changed from %s → %s.",
-                issue.getId(), issue.getTitle(),
+                "Your issue \"%s\" status changed from %s → %s.",
+                issue.getTitle(),
                 oldStatus.name().replace("_", " "),
                 newStatus.name().replace("_", " ")
         );
@@ -41,9 +41,9 @@ public class NotificationService {
     // ── Delete request — notify ALL admins ────────────────────────────────────
     public void createDeleteRequestNotification(Issue issue, User requestedBy, String reason) {
         String message = String.format(
-                "%s %s requested deletion of issue #%d \"%s\". Reason: %s",
+                "%s %s requested deletion of issue \"%s\". Reason: %s",
                 requestedBy.getFirstname(), requestedBy.getLastname(),
-                issue.getId(), issue.getTitle(), reason
+                issue.getTitle(), reason
         );
         List<User> admins = userRepository.findByRole(User.Role.ADMIN);
         for (User admin : admins) {
@@ -54,8 +54,8 @@ public class NotificationService {
     // ── Delete approved — notify issue owner ──────────────────────────────────
     public void createDeleteApprovedNotification(User issueOwner, Issue issue) {
         String message = String.format(
-                "Your deletion request for issue #%d \"%s\" was approved. The issue has been deleted.",
-                issue.getId(), issue.getTitle()
+                "Your deletion request for issue \"%s\" was approved. The issue has been deleted.",
+                issue.getTitle()
         );
         save(issueOwner, null, Notification.Type.DELETE_APPROVED, message);
     }
@@ -63,8 +63,8 @@ public class NotificationService {
     // ── Delete declined — notify issue owner ──────────────────────────────────
     public void createDeleteDeclinedNotification(User issueOwner, Issue issue) {
         String message = String.format(
-                "Your deletion request for issue #%d \"%s\" was declined by an admin.",
-                issue.getId(), issue.getTitle()
+                "Your deletion request for issue \"%s\" was declined by an admin.",
+                issue.getTitle()
         );
         save(issueOwner, issue, Notification.Type.DELETE_DECLINED, message);
     }
@@ -88,6 +88,11 @@ public class NotificationService {
     // ── Mark all as read ──────────────────────────────────────────────────────
     public void markAllAsRead(User user) {
         notificationRepository.markAllAsReadForUser(user);
+    }
+
+    // ── Delete all read notifications ─────────────────────────────────────────
+    public void deleteAllReadNotifications(Long userId) {
+        notificationRepository.deleteByUserIdAndIsReadTrue(userId);
     }
 
     // ── Internal helper ───────────────────────────────────────────────────────

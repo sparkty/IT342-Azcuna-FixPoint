@@ -345,15 +345,60 @@ const IssueDetailScreen = () => {
                       <div className="issue-description">
                         {issue.description}
                       </div>
-                      {issue.attachments && issue.attachments.length > 0 && (
+                      {issue.attachment && (
                         <div style={{ marginTop: '16px' }}>
-                          <div className="form-label">ATTACHMENTS</div>
-                          <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
-                            {issue.attachments.map((file, idx) => (
-                              <div key={idx} className="attachment-chip">
-                                🖼️ {file.name}
+                          <div className="form-label">ATTACHMENT</div>
+
+                          <div style={{ marginTop: '8px' }}>
+                            {/* Image files */}
+                            {/\.(png|jpg|jpeg|gif|webp)$/i.test(issue.attachment.filename) ? (
+                              <div>
+                                <img
+                                  src={issue.attachment.url}
+                                  alt={issue.attachment.filename}
+                                  style={{
+                                    maxWidth: '100%',
+                                    maxHeight: '300px',
+                                    borderRadius: '6px',
+                                    border: '1px solid var(--border)',
+                                    objectFit: 'contain',
+                                    display: 'block',
+                                    marginBottom: '8px'
+                                  }}
+                                />
+
+                                <a
+                                  href={issue.attachment.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="attachment-chip"
+                                  style={{
+                                    textDecoration: 'none',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px'
+                                  }}
+                                >
+                                  🖼️ {issue.attachment.filename} — open full size
+                                </a>
                               </div>
-                            ))}
+                            ) : (
+                              /* Other files (PDF, docs, etc.) */
+                              <a
+                                href={issue.attachment.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="attachment-chip"
+                                style={{
+                                  textDecoration: 'none',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px'
+                                }}
+                              >
+                                📄 {issue.attachment.filename} — view / download
+                              </a>
+                            )}
                           </div>
                         </div>
                       )}

@@ -55,6 +55,15 @@ const NotificationsScreen = () => {
     }
   };
 
+  const handleDeleteAllRead = async () => {
+    try {
+      await notificationService.deleteAllRead();
+      setNotifications(prev => prev.filter(n => !n.isRead));
+    } catch (err) {
+      console.error('Failed to delete read notifications:', err);
+    }
+  };
+
   const handleNotificationClick = (notification) => {
     if (!notification.isRead) {
       handleMarkAsRead(notification.id);
@@ -156,6 +165,11 @@ const NotificationsScreen = () => {
                 {unreadCount > 0 && (
                   <button className="btn-sm ghost" onClick={handleMarkAllAsRead}>
                     Mark all read
+                  </button>
+                )}
+                {notifications.some(n => n.isRead) && (
+                  <button className="btn-sm ghost" onClick={handleDeleteAllRead}>
+                    Clear read
                   </button>
                 )}
               </div>
