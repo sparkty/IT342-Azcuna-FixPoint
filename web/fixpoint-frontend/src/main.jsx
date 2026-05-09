@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App.jsx';      // root component
-import './styles/LoginRegisterScreen.css'; // import your CSS
+import App from './App.jsx';
+import './features/auth/LoginRegisterScreen.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

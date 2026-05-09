@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { issueService } from '../services/api';
-import '../styles/DashboardScreen.css';
-import Sidebar from '../components/Sidebar';
+import { issueService } from '../../shared/api/api';
+import './DashboardScreen.css';
+import Sidebar from '../../shared/components/Sidebar';
 
 const DashboardScreen = () => {
   const navigate = useNavigate();

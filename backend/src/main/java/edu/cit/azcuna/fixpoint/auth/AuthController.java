@@ -1,4 +1,4 @@
-package edu.cit.azcuna.fixpoint.controller;
+package edu.cit.azcuna.fixpoint.auth;
 
 import edu.cit.azcuna.fixpoint.dto.*;
 import edu.cit.azcuna.fixpoint.service.AuthService;

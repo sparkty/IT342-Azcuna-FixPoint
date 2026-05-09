@@ -1,4 +1,4 @@
-package edu.cit.azcuna.fixpoint.security;
+package edu.cit.azcuna.fixpoint.shared.security;
 
 import edu.cit.azcuna.fixpoint.entity.User;
 import edu.cit.azcuna.fixpoint.repository.UserRepository;

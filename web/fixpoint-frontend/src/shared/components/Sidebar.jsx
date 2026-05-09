@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { notificationService } from '../services/api';
+import { notificationService } from '../../shared/api/api';
  
 const Sidebar = () => {
   const navigate = useNavigate();

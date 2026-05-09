@@ -1,4 +1,4 @@
-package edu.cit.azcuna.fixpoint.controller;
+package edu.cit.azcuna.fixpoint.auth;
 
 import edu.cit.azcuna.fixpoint.dto.NotificationResponse;
 import edu.cit.azcuna.fixpoint.entity.User;

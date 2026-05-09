@@ -1,4 +1,4 @@
-package edu.cit.azcuna.fixpoint.controller;
+package edu.cit.azcuna.fixpoint.auth;
 
 import edu.cit.azcuna.fixpoint.service.FileStorageService;
 import lombok.RequiredArgsConstructor;

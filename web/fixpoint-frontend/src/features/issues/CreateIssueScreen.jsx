@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { issueService } from '../services/api';
-import '../styles/CreateIssueScreen.css';
-import Sidebar from '../components/Sidebar';
+import { issueService } from '../../shared/api/api';
+import './CreateIssueScreen.css';
+import Sidebar from '../../shared/components/Sidebar';
 
 const CreateIssueScreen = () => {
   const navigate = useNavigate();

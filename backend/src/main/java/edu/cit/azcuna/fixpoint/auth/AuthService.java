@@ -3,7 +3,7 @@ package edu.cit.azcuna.fixpoint.service;
 import edu.cit.azcuna.fixpoint.dto.*;
 import edu.cit.azcuna.fixpoint.entity.User;
 import edu.cit.azcuna.fixpoint.repository.UserRepository;
-import edu.cit.azcuna.fixpoint.security.JwtUtil;
+import edu.cit.azcuna.fixpoint.shared.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.*;
 import org.springframework.security.crypto.password.PasswordEncoder;

@@ -1,9 +1,9 @@
 // NotificationsScreen.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { notificationService } from '../services/api';
-import '../styles/NotificationsScreen.css';
-import Sidebar from '../components/Sidebar';
+import { notificationService } from '../../shared/api/api';
+import './NotificationsScreen.css';
+import Sidebar from '../../shared/components/Sidebar';
 
 const NotificationsScreen = () => {
   const navigate = useNavigate();

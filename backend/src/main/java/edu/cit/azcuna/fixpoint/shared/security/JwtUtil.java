@@ -1,4 +1,4 @@
-package edu.cit.azcuna.fixpoint.security;
+package edu.cit.azcuna.fixpoint.shared.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

@@ -1,7 +1,7 @@
-package edu.cit.azcuna.fixpoint.config;
+package edu.cit.azcuna.fixpoint.shared.config;
 
-import edu.cit.azcuna.fixpoint.security.JwtAuthFilter;
-import edu.cit.azcuna.fixpoint.security.UserDetailsServiceImpl;
+import edu.cit.azcuna.fixpoint.shared.security.JwtAuthFilter;
+import edu.cit.azcuna.fixpoint.shared.security.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

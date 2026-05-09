@@ -1,4 +1,4 @@
-package edu.cit.azcuna.fixpoint.security;
+package edu.cit.azcuna.fixpoint.shared.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
