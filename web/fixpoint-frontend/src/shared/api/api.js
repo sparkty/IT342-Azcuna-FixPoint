@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api/v1',
+  baseURL: 'https://it342-azcuna-fixpoint-production-6dbf.up.railway.app/api/v1',
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' }
 });
