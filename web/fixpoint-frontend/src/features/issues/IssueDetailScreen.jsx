@@ -611,6 +611,11 @@ const IssueDetailScreen = () => {
                     {!isAdmin && deleteRequest && (
                       <div className="form-card" style={{ borderColor: 'rgba(245,166,35,0.3)', marginTop: '16px' }}>
                         <div className="form-card-title">Deletion Request Pending</div>
+                        {deleteMsg?.startsWith('✓') && (
+                          <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid #10b981', borderRadius: '6px', padding: '10px', marginBottom: '12px', fontSize: '12px', color: '#10b981' }}>
+                            {deleteMsg}
+                          </div>
+                        )}
                         <p style={{ fontSize: '13px', color: 'var(--text2)', marginBottom: '8px' }}>
                           Your request is awaiting admin review.
                         </p>

@@ -11,13 +11,14 @@ const NotificationsScreen = () => {
   const [error, setError] = useState('');
   const [notifications, setNotifications] = useState([]);
   const [selectedTab, setSelectedTab] = useState('all');
+  const [deletingRead, setDeletingRead] = useState(false);
 
   useEffect(() => {
     fetchNotifications();
   }, []);
 
-  const fetchNotifications = async () => {
-    setLoading(true);
+  const fetchNotifications = async ({ showLoader = true } = {}) => {
+    if (showLoader) setLoading(true);
     setError('');
     try {
       const response = await notificationService.getNotifications();
@@ -27,46 +28,57 @@ const NotificationsScreen = () => {
       const status = err.response?.status;
       if (!status || status === 404) {
         setNotifications([]); // endpoint not built yet — show empty silently
-      } else {
+      } else if (showLoader) {
         setError('Failed to load notifications.');
       }
     } finally {
-      setLoading(false);
+      if (showLoader) setLoading(false);
     }
   };
 
   const handleMarkAsRead = async (notificationId) => {
+    const previousNotifications = notifications;
+    setNotifications(prev => prev.map(n =>
+      n.id === notificationId ? { ...n, isRead: true } : n
+    ));
     try {
       await notificationService.markAsRead(notificationId);
-      setNotifications(notifications.map(n =>
-        n.id === notificationId ? { ...n, isRead: true } : n
-      ));
+      setNotifications(previousNotifications);
     } catch (err) {
       console.error('Failed to mark as read:', err);
     }
   };
 
   const handleMarkAllAsRead = async () => {
+    const previousNotifications = notifications;
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+
     try {
       await notificationService.markAllAsRead();
-      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
-    } catch (err) {
+      } catch (err) {
+      setNotifications(previousNotifications);
       console.error('Failed to mark all as read:', err);
     }
   };
 
   const handleDeleteAllRead = async () => {
+    const previousNotifications = notifications;
+    setDeletingRead(true);
+    setNotifications(prev => prev.filter(n => !n.isRead));
     try {
       await notificationService.deleteAllRead();
-      setNotifications(prev => prev.filter(n => !n.isRead));
+      await fetchNotifications({ showLoader: false });
     } catch (err) {
+      setNotifications(previousNotifications);
       console.error('Failed to delete read notifications:', err);
+    } finally {
+      setDeletingRead(false);
     }
   };
 
-  const handleNotificationClick = (notification) => {
+  const handleNotificationClick = async (notification) => {
     if (!notification.isRead) {
-      handleMarkAsRead(notification.id);
+      await handleMarkAsRead(notification.id);
     }
     if (notification.issueId) {
       navigate(`/issue/${notification.issueId}`);
@@ -168,8 +180,8 @@ const NotificationsScreen = () => {
                   </button>
                 )}
                 {notifications.some(n => n.isRead) && (
-                  <button className="btn-sm ghost" onClick={handleDeleteAllRead}>
-                    Clear read
+                  <button className="btn-sm ghost" onClick={handleDeleteAllRead} disabled={deletingRead}>
+                    {deletingRead ? 'Deleting...' : 'Delete read'}
                   </button>
                 )}
               </div>

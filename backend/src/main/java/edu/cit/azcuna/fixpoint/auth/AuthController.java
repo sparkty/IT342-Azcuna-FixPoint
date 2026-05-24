@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import edu.cit.azcuna.fixpoint.dto.RefreshRequest;
+import edu.cit.azcuna.fixpoint.dto.GoogleTokenRequest;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -14,6 +15,7 @@ import edu.cit.azcuna.fixpoint.dto.RefreshRequest;
 public class AuthController {
 
     private final AuthService authService;
+    private final GoogleOAuthService googleOAuthService;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -32,6 +34,21 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(@RequestBody RefreshRequest request) {
         AuthResponse response = authService.refresh(request);
+        int status = response.isSuccess() ? 200 : 401;
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> googleLogin(@RequestBody GoogleTokenRequest request) {
+        AuthResponse response = googleOAuthService.loginWithGoogle(request.getIdToken());
+        int status = response.isSuccess() ? 200 : 401;
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<AuthResponse> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7); // remove "Bearer "
+        AuthResponse response = authService.getCurrentUser(token);
         int status = response.isSuccess() ? 200 : 401;
         return ResponseEntity.status(status).body(response);
     }

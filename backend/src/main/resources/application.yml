@@ -17,3 +17,6 @@ app:
   mail:
     from: placeholder
     name: FixPoint
+
+google:
+  client-id: placeholder

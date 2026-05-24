@@ -26,8 +26,9 @@ api.interceptors.response.use(
 );
 
 export const authService = {
-  register: (data) => api.post('/auth/register', data),
-  login:    (data) => api.post('/auth/login', data),
+  register:    (data) => api.post('/auth/register', data),
+  login:       (data) => api.post('/auth/login', data),
+  googleLogin: (accessToken) => api.post('/auth/google', { idToken: accessToken }),
 };
 
 export const issueService = {
@@ -38,10 +39,6 @@ export const issueService = {
   }),
   updateIssue:  (id, data)    => api.put(`/issues/${id}`, data),
   deleteIssue:  (id)          => api.delete(`/issues/${id}`),
-  getNotifications: ()   => api.get('/notifications'),
-  markAsRead:       (id) => api.put(`/notifications/${id}/read`),
-  markAllAsRead:    ()   => api.put('/notifications/read-all'),
-  deleteAllRead:    () => api.delete('/notifications/read'),
 };
 
 export const commentService = {
@@ -51,8 +48,10 @@ export const commentService = {
 
 export const notificationService = {
   getNotifications: ()   => api.get('/notifications'),
+  markAsRead:       (id) => api.put(`/notifications/${id}/read`),
+  markAllAsRead:    ()   => api.put('/notifications/read-all'),
+  deleteAllRead:    ()   => api.delete('/notifications/read'),
 };
-
 export const deleteRequestService = {
   // Submit a deletion request for an issue
   submit: (issueId, reason) => 

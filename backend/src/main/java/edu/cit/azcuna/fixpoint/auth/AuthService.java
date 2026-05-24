@@ -80,6 +80,20 @@ public class AuthService {
         }
     }
 
+    public AuthResponse getCurrentUser(String token) {
+        try {
+            String email = jwtUtil.extractEmail(token);
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            return AuthResponse.success(AuthResponse.TokenData.builder()
+                    .user(toUserData(user))
+                    .build());
+        } catch (Exception e) {
+            return AuthResponse.error("AUTH-002", "Token expired or invalid", e.getMessage());
+        }
+    }
+
     private AuthResponse.UserData toUserData(User user) {
         return AuthResponse.UserData.builder()
                 .id(user.getId())
