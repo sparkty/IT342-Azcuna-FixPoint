@@ -31,6 +31,11 @@ public class AuthController {
         return ResponseEntity.status(status).body(response);
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<AuthResponse> logout() {
+        return ResponseEntity.ok(AuthResponse.success(null));
+    }
+
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(@RequestBody RefreshRequest request) {
         AuthResponse response = authService.refresh(request);
