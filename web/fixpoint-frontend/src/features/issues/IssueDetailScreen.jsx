@@ -191,6 +191,7 @@ const IssueDetailScreen = () => {
       navigate('/');
     }
   };
+  
 
   // Get user from localStorage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
