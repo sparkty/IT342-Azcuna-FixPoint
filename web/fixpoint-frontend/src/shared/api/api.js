@@ -29,6 +29,7 @@ export const authService = {
   register:    (data) => api.post('/auth/register', data),
   login:       (data) => api.post('/auth/login', data),
   googleLogin: (accessToken) => api.post('/auth/google', { idToken: accessToken }),
+  logout:      () => api.post('/auth/logout'),
 };
 
 export const issueService = {
