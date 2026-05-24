@@ -16,7 +16,11 @@ const IssueDetailScreen = () => {
   const [commentLoading, setCommentLoading] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('');
-  const FILE_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  const fileUrl =
+    issue?.attachment?.url
+      ? `${baseUrl}${issue.attachment.url}`
+      : null;
 
   const [deleteRequest, setDeleteRequest] = useState(null);   // pending request data
   const [showDeleteForm, setShowDeleteForm] = useState(false); // toggle inline form
@@ -378,7 +382,7 @@ const IssueDetailScreen = () => {
                                 />
 
                                 <a
-                                  href={fileUrl}
+                                  href={`${import.meta.env.VITE_API_BASE_URL}${issue.attachment.url}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="attachment-chip"
