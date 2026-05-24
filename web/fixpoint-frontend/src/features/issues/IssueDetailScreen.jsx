@@ -382,7 +382,7 @@ const IssueDetailScreen = () => {
                                 />
 
                                 <a
-                                  href={`${import.meta.env.VITE_API_BASE_URL}${issue.attachment.url}`}
+                                  href={`${import.meta.env.VITE_API_BASE_URL}/api/v1/files/${issue.attachment.url}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="attachment-chip"
@@ -399,7 +399,7 @@ const IssueDetailScreen = () => {
                             ) : (
                               /* Other files (PDF, docs, etc.) */
                               <a
-                                href={`${import.meta.env.VITE_API_BASE_URL}${issue.attachment.url}`}
+                                href={`${import.meta.env.VITE_API_BASE_URL}/api/v1/files/${issue.attachment.url}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="attachment-chip"
