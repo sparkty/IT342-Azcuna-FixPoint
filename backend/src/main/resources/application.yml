@@ -20,3 +20,8 @@ app:
 
 google:
   client-id: placeholder
+
+jwt:
+  secret: ${JWT_SECRET:fixpoint_super_secret_key_must_be_at_least_256_bits_long_for_hs256}
+  expiration: ${JWT_EXPIRATION:86400000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
