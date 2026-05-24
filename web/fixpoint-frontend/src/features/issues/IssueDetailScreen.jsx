@@ -191,8 +191,9 @@ const IssueDetailScreen = () => {
       navigate('/');
     }
   };
-  
 
+
+  
   // Get user from localStorage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userInitials = `${user.firstname?.charAt(0) || 'U'}${user.lastname?.charAt(0) || 'R'}`;
