@@ -68,6 +68,18 @@ public class AuthService {
                 .build());
     }
 
+    public AuthResponse refresh(RefreshRequest request) {
+        try {
+            String email = jwtUtil.extractEmail(request.getRefreshToken());
+            String newAccessToken = jwtUtil.generateToken(email);
+            return AuthResponse.success(AuthResponse.TokenData.builder()
+                    .accessToken(newAccessToken)
+                    .build());
+        } catch (Exception e) {
+            return AuthResponse.error("AUTH-002", "Token expired", "Refresh token is invalid or expired");
+        }
+    }
+
     private AuthResponse.UserData toUserData(User user) {
         return AuthResponse.UserData.builder()
                 .id(user.getId())

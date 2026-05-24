@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import edu.cit.azcuna.fixpoint.dto.RefreshRequest;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -24,6 +25,13 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
+        int status = response.isSuccess() ? 200 : 401;
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(@RequestBody RefreshRequest request) {
+        AuthResponse response = authService.refresh(request);
         int status = response.isSuccess() ? 200 : 401;
         return ResponseEntity.status(status).body(response);
     }
