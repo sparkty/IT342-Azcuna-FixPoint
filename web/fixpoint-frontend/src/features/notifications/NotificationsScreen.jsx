@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { notificationService } from '../../shared/api/api';
 import './NotificationsScreen.css';
 import Sidebar from '../../shared/components/Sidebar';
+import TopNav from '../../shared/components/TopNav';
 
 const NotificationsScreen = () => {
   const navigate = useNavigate();
@@ -148,7 +149,7 @@ const NotificationsScreen = () => {
     return (
       <div className="notifications-container">
         <nav className="top-nav">
-          <div className="nav-logo">FIX<span style={{ color: 'var(--text2)' }}>POINT</span></div>
+          <TopNav />
         </nav>
         <div className="content">
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
@@ -162,9 +163,7 @@ const NotificationsScreen = () => {
   return (
     <div className="notifications-container">
       <nav className="top-nav">
-        <div className="nav-logo">
-          FIX<span style={{ color: 'var(--text2)' }}>POINT</span>
-        </div>
+        <TopNav />
       </nav>
 
       <div className="content">

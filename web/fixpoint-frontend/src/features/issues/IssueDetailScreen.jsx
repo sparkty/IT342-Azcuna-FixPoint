@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { issueService, deleteRequestService, commentService } from '../../shared/api/api';
 import './IssueDetailScreen.css';
 import Sidebar from '../../shared/components/Sidebar';
+import TopNav from '../../shared/components/TopNav';
 
 const IssueDetailScreen = () => {
   const navigate = useNavigate();
@@ -193,7 +194,7 @@ const IssueDetailScreen = () => {
   };
 
 
-  
+
   // Get user from localStorage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const userInitials = `${user.firstname?.charAt(0) || 'U'}${user.lastname?.charAt(0) || 'R'}`;
@@ -267,7 +268,7 @@ const IssueDetailScreen = () => {
     return (
       <div className="issue-detail-container">
         <nav className="top-nav">
-          <div className="nav-logo">FIX<span style={{ color: 'var(--text2)' }}>POINT</span></div>
+          <TopNav />
         </nav>
         <div className="content">
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
@@ -281,10 +282,8 @@ const IssueDetailScreen = () => {
   return (
     <div className="issue-detail-container">
       <nav className="top-nav">
-        <div className="nav-logo">
-          FIX<span style={{ color: 'var(--text2)' }}>POINT</span>
-        </div>
-      </nav>
+          <TopNav />
+        </nav>
 
       <div className="content">
         <div className="app-shell">

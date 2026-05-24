@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { issueService } from '../../shared/api/api';
 import './DashboardScreen.css';
 import Sidebar from '../../shared/components/Sidebar';
+import TopNav from '../../shared/components/TopNav';
 
 const DashboardScreen = () => {
   const navigate = useNavigate();
@@ -144,7 +145,7 @@ const DashboardScreen = () => {
     return (
       <div className="dashboard-container">
         <nav className="top-nav">
-          <div className="nav-logo">FIX<span style={{ color: 'var(--text2)' }}>POINT</span></div>
+          <TopNav />
         </nav>
         <div className="content">
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
@@ -158,9 +159,7 @@ const DashboardScreen = () => {
   return (
     <div className="dashboard-container">
       <nav className="top-nav">
-        <div className="nav-logo">
-          FIX<span style={{ color: 'var(--text2)' }}>POINT</span>
-        </div>
+        <TopNav />
       </nav>
 
       <div className="content">

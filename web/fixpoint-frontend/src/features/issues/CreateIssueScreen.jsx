@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { issueService } from '../../shared/api/api';
 import './CreateIssueScreen.css';
 import Sidebar from '../../shared/components/Sidebar';
+import TopNav from '../../shared/components/TopNav';
 
 const CreateIssueScreen = () => {
   const navigate = useNavigate();
@@ -172,10 +173,8 @@ const CreateIssueScreen = () => {
   return (
     <div className="create-issue-container">
       <nav className="top-nav">
-        <div className="nav-logo">
-          FIX<span style={{ color: 'var(--text2)' }}>POINT</span>
-        </div>
-      </nav>
+          <TopNav />
+        </nav>
 
       <div className="content">
         <div className="app-shell">

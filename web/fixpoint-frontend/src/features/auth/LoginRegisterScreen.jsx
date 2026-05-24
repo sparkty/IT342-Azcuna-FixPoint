@@ -4,6 +4,7 @@ import { authService } from '../../shared/api/api';
 import './LoginRegisterScreen.css';
 import Sidebar from '../../shared/components/Sidebar';
 import { GoogleLogin } from '@react-oauth/google';
+import TopNav from '../../shared/components/TopNav';
 
 const LoginRegisterScreen = () => {
   const navigate = useNavigate();
@@ -198,10 +199,8 @@ const LoginRegisterScreen = () => {
   return (
     <div className="login-screen-container">
       <nav className="top-nav">
-        <div className="nav-logo">
-          FIX<span style={{ color: 'var(--text2)' }}>POINT</span>
-        </div>
-      </nav>
+          <TopNav />
+        </nav>
 
       <div className="content">
         <div className="auth-screen">
