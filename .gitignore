@@ -1,3 +1,5 @@
 .vscode/
 
 backend/uploads/*
+
+application-local.yml

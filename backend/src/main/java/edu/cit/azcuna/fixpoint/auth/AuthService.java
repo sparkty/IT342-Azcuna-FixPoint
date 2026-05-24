@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import edu.cit.azcuna.fixpoint.email.EmailService;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +18,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final EmailService emailService;
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -33,6 +35,7 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
+        emailService.sendWelcomeEmail(user.getEmail(), user.getFirstname());
 
         String accessToken = jwtUtil.generateToken(user.getEmail());
         String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());

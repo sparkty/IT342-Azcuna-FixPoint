@@ -6,6 +6,7 @@ import edu.cit.azcuna.fixpoint.dto.UpdateIssueRequest;
 import edu.cit.azcuna.fixpoint.entity.Issue;
 import edu.cit.azcuna.fixpoint.entity.User;
 import edu.cit.azcuna.fixpoint.repository.IssueRepository;
+import edu.cit.azcuna.fixpoint.email.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -23,7 +25,9 @@ public class IssueService {
 
     private final IssueRepository issueRepository;
     private final FileStorageService fileStorageService;
-    private final NotificationService notificationService; // ← added
+    private final NotificationService notificationService;
+    private final EmailService emailService;
+
 
     public IssueResponse create(CreateIssueRequest request, MultipartFile attachment, User currentUser) {
         Issue issue = Issue.builder()
@@ -106,6 +110,14 @@ public class IssueService {
 
             // ── Fire notification to issue owner ──────────────────────────────
             notificationService.createStatusUpdateNotification(saved, oldStatus, request.getStatus());
+
+            emailService.sendStatusUpdateEmail(
+            saved.getUser().getEmail(),
+            saved.getUser().getFirstname(),
+            saved.getId(),
+            saved.getTitle(),
+            saved.getStatus().name()
+            );
 
             return IssueResponse.from(saved);
         }
