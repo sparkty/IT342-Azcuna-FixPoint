@@ -16,6 +16,7 @@ const IssueDetailScreen = () => {
   const [commentLoading, setCommentLoading] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('');
+  const FILE_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const [deleteRequest, setDeleteRequest] = useState(null);   // pending request data
   const [showDeleteForm, setShowDeleteForm] = useState(false); // toggle inline form
@@ -363,7 +364,7 @@ const IssueDetailScreen = () => {
                             {/\.(png|jpg|jpeg|gif|webp)$/i.test(issue.attachment.filename) ? (
                               <div>
                                 <img
-                                  src={issue.attachment.url}
+                                  src={fileUrl}
                                   alt={issue.attachment.filename}
                                   style={{
                                     maxWidth: '100%',
@@ -377,7 +378,7 @@ const IssueDetailScreen = () => {
                                 />
 
                                 <a
-                                  href={issue.attachment.url}
+                                  href={fileUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="attachment-chip"
@@ -394,7 +395,7 @@ const IssueDetailScreen = () => {
                             ) : (
                               /* Other files (PDF, docs, etc.) */
                               <a
-                                href={issue.attachment.url}
+                                href={`${import.meta.env.VITE_API_BASE_URL}${issue.attachment.url}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="attachment-chip"

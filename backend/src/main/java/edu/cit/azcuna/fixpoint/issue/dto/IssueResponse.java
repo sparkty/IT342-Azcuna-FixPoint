@@ -45,7 +45,7 @@ public class IssueResponse {
         if (issue.getAttachmentFilename() != null) {
             attachmentInfo = AttachmentInfo.builder()
                     .filename(issue.getAttachmentOriginalName())
-                    .url("/api/v1/files/" + issue.getAttachmentFilename())
+                    .url(issue.getAttachmentFilename())
                     .build();
         }
 
