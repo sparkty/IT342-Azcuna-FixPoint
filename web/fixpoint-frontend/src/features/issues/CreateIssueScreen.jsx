@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { issueService } from '../../shared/api/api';
 import './CreateIssueScreen.css';
@@ -9,6 +9,20 @@ const CreateIssueScreen = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [location, setLocation] = useState(null);
+
+  useEffect(() => {
+  fetch('http://ip-api.com/json')
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        setLocation({ city: data.city, region: data.regionName });
+      }
+    })
+    .catch(() => {
+      // silently fail — location hint is optional
+    });
+}, []);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -193,7 +207,9 @@ const CreateIssueScreen = () => {
               )}
 
               <div className="mobile-note">
-                🌐 External API integration provides category suggestions and location data based on issue context.
+                🌐 {location
+                  ? `Reporting from: ${location.city}, ${location.region}`
+                  : 'Detecting your location...'}
               </div>
 
               <div className="issue-create-layout">
