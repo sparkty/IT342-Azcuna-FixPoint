@@ -69,6 +69,25 @@ public class NotificationService {
         save(issueOwner, issue, Notification.Type.DELETE_DECLINED, message);
     }
 
+    public void createCommentNotification(Issue issue, User author) {
+        String message = String.format(
+                "%s %s commented on issue \"%s\".",
+                author.getFirstname(), author.getLastname(), issue.getTitle()
+        );
+
+        if (!issue.getUser().getId().equals(author.getId())) {
+            save(issue.getUser(), issue, Notification.Type.COMMENT, message);
+            return;
+        }
+
+        List<User> admins = userRepository.findByRole(User.Role.ADMIN);
+        for (User admin : admins) {
+            if (!admin.getId().equals(author.getId())) {
+                save(admin, issue, Notification.Type.COMMENT, message);
+            }
+        }
+    }
+
     // ── Get all for user ──────────────────────────────────────────────────────
     public List<NotificationResponse> getForUser(User user) {
         return notificationRepository.findByUserOrderByCreatedAtDesc(user)

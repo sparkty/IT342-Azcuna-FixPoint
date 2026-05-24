@@ -38,13 +38,19 @@ export const issueService = {
   }),
   updateIssue:  (id, data)    => api.put(`/issues/${id}`, data),
   deleteIssue:  (id)          => api.delete(`/issues/${id}`),
-};
-
-export const notificationService = {
   getNotifications: ()   => api.get('/notifications'),
   markAsRead:       (id) => api.put(`/notifications/${id}/read`),
   markAllAsRead:    ()   => api.put('/notifications/read-all'),
   deleteAllRead:    () => api.delete('/notifications/read'),
+};
+
+export const commentService = {
+  getComments: (issueId) => api.get(`/issues/${issueId}/comments`),
+  addComment:  (issueId, data) => api.post(`/issues/${issueId}/comments`, data),
+};
+
+export const notificationService = {
+  getNotifications: ()   => api.get('/notifications'),
 };
 
 export const deleteRequestService = {

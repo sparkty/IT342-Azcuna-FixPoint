@@ -86,7 +86,7 @@ public class IssueService {
 
     @Transactional(readOnly = true)
     public IssueResponse getById(Long id, User currentUser) {
-        return IssueResponse.from(findAndAuthorize(id, currentUser));
+        return IssueResponse.from(findAndAuthorize(id, currentUser), true);
     }
 
     public IssueResponse update(Long id, UpdateIssueRequest request, User currentUser) {

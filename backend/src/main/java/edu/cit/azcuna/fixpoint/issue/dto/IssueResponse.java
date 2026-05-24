@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter @Builder
 public class IssueResponse {
@@ -21,6 +22,7 @@ public class IssueResponse {
     private LocalDateTime updatedAt;
     private String reporterName;
     private String reporterInitials;
+    private List<IssueCommentResponse> comments;
 
     @Getter @Builder
     public static class AttachmentInfo {
@@ -30,12 +32,23 @@ public class IssueResponse {
 
     // ── Factory ────────────────────────────────────────────────────────────────
     public static IssueResponse from(Issue issue) {
+        return from(issue, false);
+    }
+
+    public static IssueResponse from(Issue issue, boolean includeComments) {
         AttachmentInfo attachmentInfo = null;
         if (issue.getAttachmentFilename() != null) {
             attachmentInfo = AttachmentInfo.builder()
                     .filename(issue.getAttachmentOriginalName())
                     .url("/api/v1/files/" + issue.getAttachmentFilename())
                     .build();
+        }
+
+        List<IssueCommentResponse> commentData = null;
+        if (includeComments && issue.getComments() != null) {
+            commentData = issue.getComments().stream()
+                    .map(IssueCommentResponse::from)
+                    .toList();
         }
 
         return IssueResponse.builder()
@@ -54,6 +67,7 @@ public class IssueResponse {
             )
             .createdAt(issue.getCreatedAt())
             .updatedAt(issue.getUpdatedAt())
+            .comments(commentData)
             .build();
     }
 }

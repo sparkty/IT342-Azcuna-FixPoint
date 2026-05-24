@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { issueService, deleteRequestService } from '../../shared/api/api';
+import { issueService, deleteRequestService, commentService } from '../../shared/api/api';
 import './IssueDetailScreen.css';
 import Sidebar from '../../shared/components/Sidebar';
 
@@ -12,6 +12,7 @@ const IssueDetailScreen = () => {
   const [error, setError] = useState('');
   const [issue, setIssue] = useState(null);
   const [newComment, setNewComment] = useState('');
+  const [commentLoading, setCommentLoading] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('');
 
@@ -69,21 +70,21 @@ const IssueDetailScreen = () => {
 
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
-    
+
+    setCommentLoading(true);
     try {
-      // TODO: Uncomment when backend is ready
-      // const response = await commentService.addComment(id, { content: newComment });
-      // const newCommentData = response.data.data;
-      // setIssue({
-      //   ...issue,
-      //   comments: [...(issue.comments || []), newCommentData]
-      // });
-      // setNewComment('');
-      
-      console.log('Comment added:', newComment);
+      const response = await commentService.addComment(id, { content: newComment });
+      const newCommentData = response.data.data;
+      setIssue({
+        ...issue,
+        comments: [...(issue.comments || []), newCommentData],
+        updatedAt: newCommentData.createdAt || issue.updatedAt
+      });
       setNewComment('');
     } catch (err) {
       setError('Failed to add comment');
+    } finally {
+      setCommentLoading(false);
     }
   };
 
@@ -474,8 +475,12 @@ const IssueDetailScreen = () => {
                           rows="3"
                         />
                         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
-                          <button className="btn-sm primary" onClick={handleAddComment}>
-                            Post Comment
+                          <button
+                            className="btn-sm primary"
+                            onClick={handleAddComment}
+                            disabled={commentLoading || !newComment.trim()}
+                          >
+                            {commentLoading ? 'Posting...' : 'Post Comment'}
                           </button>
                         </div>
                       </div>
