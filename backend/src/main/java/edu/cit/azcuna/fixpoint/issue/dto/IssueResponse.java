@@ -11,6 +11,7 @@ import java.util.List;
 public class IssueResponse {
 
     private Long id;
+    private Long displayId;
     private String title;
     private String description;
     private Issue.Category category;
@@ -32,10 +33,14 @@ public class IssueResponse {
 
     // ── Factory ────────────────────────────────────────────────────────────────
     public static IssueResponse from(Issue issue) {
-        return from(issue, false);
+        return from(issue, issue.getId(), false);
     }
 
     public static IssueResponse from(Issue issue, boolean includeComments) {
+        return from(issue, issue.getId(), includeComments);
+    }
+
+    public static IssueResponse from(Issue issue, Long displayId, boolean includeComments) {
         AttachmentInfo attachmentInfo = null;
         if (issue.getAttachmentFilename() != null) {
             attachmentInfo = AttachmentInfo.builder()
@@ -53,6 +58,7 @@ public class IssueResponse {
 
         return IssueResponse.builder()
             .id(issue.getId())
+            .displayId(displayId)
             .title(issue.getTitle())
             .description(issue.getDescription())
             .category(issue.getCategory())

@@ -50,7 +50,7 @@ public class DeleteRequestController {
 
     @GetMapping("/api/v1/issues/{issueId}/request-deletion")
     public ResponseEntity<Map<String, Object>> getPending(@PathVariable Long issueId) {
-        Optional<DeleteRequestResponse> data = deleteRequestService.getPendingForIssue(issueId);
+        Optional<DeleteRequestResponse> data = deleteRequestService.getPendingForIssue(issueId, getCurrentUser());
         return ResponseEntity.ok(success(data.orElse(null)));
     }
 

@@ -59,7 +59,10 @@ const IssueDetailScreen = () => {
     try {
       const response = await issueService.updateIssue(id, { status: newStatus });
       const updated = response.data.data;
-      setIssue(updated);
+      setIssue({
+        ...updated,
+        comments: updated.comments ?? issue.comments ?? []
+      });
       setSelectedStatus(updated.status);
     } catch (err) {
       setError('Failed to update status.');
@@ -325,7 +328,7 @@ const IssueDetailScreen = () => {
                     {/* Issue Header */}
                     <div className="issue-detail-header">
                       <div className="issue-detail-id">
-                        ISSUE-{issue.id} · Created {formatDate(issue.createdAt)}
+                        ISSUE-{issue.displayId ?? issue.id} · Created {formatDate(issue.createdAt)}
                       </div>
                       <div className="issue-detail-title">{issue.title}</div>
                       <div className="issue-meta-row">

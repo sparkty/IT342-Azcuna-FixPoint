@@ -118,7 +118,7 @@ const CreateIssueScreen = () => {
       setFormData({ title: '', category: '', priority: 'MEDIUM', description: '' });
       setAttachments([]);
 
-      setTimeout(() => navigate(`/issue/${created.id}`), 1500);
+      setTimeout(() => navigate(`/issue/${created.displayId ?? created.id}`), 1500);
     } catch (err) {
       const msg = err.response?.data?.error?.message ?? 'Failed to create issue. Please try again.';
       setError(msg);

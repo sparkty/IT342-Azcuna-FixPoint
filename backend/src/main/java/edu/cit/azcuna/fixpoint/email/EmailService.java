@@ -38,17 +38,17 @@ public class EmailService {
 
     @Async
     public void sendStatusUpdateEmail(String toEmail, String firstname,
-                                      Long issueId, String issueTitle,
+                                      Long issueDisplayId, String issueTitle,
                                       String newStatus) {
         Context context = new Context();
         context.setVariable("firstname", firstname);
-        context.setVariable("issueId", issueId);
+        context.setVariable("issueId", issueDisplayId);
         context.setVariable("issueTitle", issueTitle);
         context.setVariable("newStatus", newStatus);
-        context.setVariable("issueUrl", "http://localhost:5173/issues/" + issueId);
+        context.setVariable("issueUrl", "http://localhost:5173/issue/" + issueDisplayId);
 
         String html = templateEngine.process("email/issue-status-update", context);
-        sendHtmlEmail(toEmail, "FixPoint – Issue #" + issueId + " Status Updated", html);
+        sendHtmlEmail(toEmail, "FixPoint - Issue #" + issueDisplayId + " Status Updated", html);
     }
 
     private void sendHtmlEmail(String to, String subject, String htmlBody) {

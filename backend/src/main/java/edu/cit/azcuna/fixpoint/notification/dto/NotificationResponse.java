@@ -17,9 +17,13 @@ public class NotificationResponse {
     private LocalDateTime createdAt;
 
     public static NotificationResponse from(Notification n) {
+        return from(n, n.getIssue() != null ? n.getIssue().getId() : null);
+    }
+
+    public static NotificationResponse from(Notification n, Long issueRouteId) {
         return NotificationResponse.builder()
                 .id(n.getId())
-                .issueId(n.getIssue() != null ? n.getIssue().getId() : null)
+                .issueId(issueRouteId)
                 .type(n.getType().name())
                 .message(n.getMessage())
                 .isRead(n.getIsRead())

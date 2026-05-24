@@ -8,8 +8,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "issues")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder

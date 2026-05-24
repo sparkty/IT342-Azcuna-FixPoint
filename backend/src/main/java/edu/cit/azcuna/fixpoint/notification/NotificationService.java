@@ -5,6 +5,7 @@ import edu.cit.azcuna.fixpoint.entity.Issue;
 import edu.cit.azcuna.fixpoint.entity.Notification;
 import edu.cit.azcuna.fixpoint.entity.User;
 import edu.cit.azcuna.fixpoint.repository.NotificationRepository;
+import edu.cit.azcuna.fixpoint.repository.IssueRepository;
 import edu.cit.azcuna.fixpoint.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final IssueRepository issueRepository;
 
     // ── Status update (existing) ───────────────────────────────────────────────
     public void createStatusUpdateNotification(Issue issue, Issue.Status oldStatus, Issue.Status newStatus) {
@@ -91,7 +93,9 @@ public class NotificationService {
     // ── Get all for user ──────────────────────────────────────────────────────
     public List<NotificationResponse> getForUser(User user) {
         return notificationRepository.findByUserOrderByCreatedAtDesc(user)
-                .stream().map(NotificationResponse::from).collect(Collectors.toList());
+                .stream()
+                .map(notification -> NotificationResponse.from(notification, getIssueRouteId(notification, user)))
+                .collect(Collectors.toList());
     }
 
     // ── Mark single as read ───────────────────────────────────────────────────
@@ -101,7 +105,8 @@ public class NotificationService {
         if (!notification.getUser().getId().equals(currentUser.getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied.");
         notification.setIsRead(true);
-        return NotificationResponse.from(notificationRepository.save(notification));
+        Notification saved = notificationRepository.save(notification);
+        return NotificationResponse.from(saved, getIssueRouteId(saved, currentUser));
     }
 
     // ── Mark all as read ──────────────────────────────────────────────────────
@@ -119,5 +124,20 @@ public class NotificationService {
         notificationRepository.save(Notification.builder()
                 .user(user).issue(issue).type(type).message(message).isRead(false)
                 .build());
+    }
+
+    private Long getIssueRouteId(Notification notification, User recipient) {
+        if (notification.getIssue() == null) {
+            return null;
+        }
+
+        if (recipient.getRole() == User.Role.ADMIN) {
+            return notification.getIssue().getId();
+        }
+
+        return issueRepository.countByUserAndIdLessThanEqual(
+                notification.getIssue().getUser(),
+                notification.getIssue().getId()
+        );
     }
 }

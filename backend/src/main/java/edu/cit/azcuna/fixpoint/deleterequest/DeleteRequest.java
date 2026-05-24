@@ -30,6 +30,7 @@ public class DeleteRequest {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private Status status = Status.PENDING;
 
     @ManyToOne(fetch = FetchType.LAZY)

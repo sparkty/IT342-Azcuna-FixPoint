@@ -48,8 +48,7 @@ public class IssueCommentService {
     }
 
     private Issue findAndAuthorize(Long issueId, User currentUser) {
-        Issue issue = issueRepository.findById(issueId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Issue not found."));
+        Issue issue = findByRouteId(issueId, currentUser);
 
         boolean isAdmin = currentUser.getRole() == User.Role.ADMIN;
         boolean isOwner = issue.getUser().getId().equals(currentUser.getId());
@@ -58,5 +57,20 @@ public class IssueCommentService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access to this issue.");
 
         return issue;
+    }
+
+    private Issue findByRouteId(Long routeId, User currentUser) {
+        if (currentUser.getRole() == User.Role.ADMIN) {
+            return issueRepository.findById(routeId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Issue not found."));
+        }
+
+        List<Issue> userIssues = issueRepository.findByUserOrderByIdAsc(currentUser);
+        int index = Math.toIntExact(routeId - 1);
+        if (index < 0 || index >= userIssues.size()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Issue not found.");
+        }
+
+        return userIssues.get(index);
     }
 }

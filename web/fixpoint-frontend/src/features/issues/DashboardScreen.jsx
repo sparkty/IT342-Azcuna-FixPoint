@@ -56,8 +56,12 @@ const DashboardScreen = () => {
     setStats({ total, pending, inProgress, resolved });
   };
 
-  const handleViewIssue = (issueId) => {
-    navigate(`/issue/${issueId}`);
+  const getIssueRouteId = (issue) => {
+    return user.role === 'ADMIN' ? issue.id : (issue.displayId ?? issue.id);
+  };
+
+  const handleViewIssue = (issue) => {
+    navigate(`/issue/${getIssueRouteId(issue)}`);
   };
 
   const handleNewIssue = () => {
@@ -262,10 +266,10 @@ const DashboardScreen = () => {
                     <div 
                       key={issue.id} 
                       className="issue-row"
-                      onClick={() => handleViewIssue(issue.id)}
+                      onClick={() => handleViewIssue(issue)}
                       style={{ cursor: 'pointer' }}
                     >
-                      <div className="issue-id">#{index + 1}</div>
+                      <div className="issue-id">#{issue.displayId ?? index + 1}</div>
                       <div className="issue-title-cell">
                         <div className="issue-title-text">{issue.title}</div>
                         <div className="issue-desc">{issue.description?.substring(0, 100)}...</div>

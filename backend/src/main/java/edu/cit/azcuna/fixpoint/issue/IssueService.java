@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +52,8 @@ public class IssueService {
             }
         }
 
-        return IssueResponse.from(issueRepository.save(issue));
+        Issue saved = issueRepository.save(issue);
+        return IssueResponse.from(saved, getDisplayId(saved), false);
     }
 
     @Transactional(readOnly = true)
@@ -81,16 +83,17 @@ public class IssueService {
                 result = issueRepository.findByUser(currentUser, pageable);
         }
 
-        return result.map(IssueResponse::from);
+        return result.map(issue -> IssueResponse.from(issue, getDisplayId(issue), false));
     }
 
     @Transactional(readOnly = true)
-    public IssueResponse getById(Long id, User currentUser) {
-        return IssueResponse.from(findAndAuthorize(id, currentUser), true);
+    public IssueResponse getById(Long routeId, User currentUser) {
+        Issue issue = findAndAuthorize(routeId, currentUser);
+        return IssueResponse.from(issue, getDisplayId(issue), true);
     }
 
-    public IssueResponse update(Long id, UpdateIssueRequest request, User currentUser) {
-        Issue issue = findAndAuthorize(id, currentUser);
+    public IssueResponse update(Long routeId, UpdateIssueRequest request, User currentUser) {
+        Issue issue = findAndAuthorize(routeId, currentUser);
         boolean isAdmin = currentUser.getRole() == User.Role.ADMIN;
 
         if (request.getDescription() != null)
@@ -114,15 +117,16 @@ public class IssueService {
             emailService.sendStatusUpdateEmail(
             saved.getUser().getEmail(),
             saved.getUser().getFirstname(),
-            saved.getId(),
+            getDisplayId(saved),
             saved.getTitle(),
             saved.getStatus().name()
             );
 
-            return IssueResponse.from(saved);
+            return IssueResponse.from(saved, getDisplayId(saved), true);
         }
 
-        return IssueResponse.from(issueRepository.save(issue));
+        Issue saved = issueRepository.save(issue);
+        return IssueResponse.from(saved, getDisplayId(saved), true);
     }
 
     public void delete(Long id, User currentUser) {
@@ -138,9 +142,8 @@ public class IssueService {
         issueRepository.delete(issue);
     }
 
-    private Issue findAndAuthorize(Long id, User currentUser) {
-        Issue issue = issueRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Issue not found."));
+    private Issue findAndAuthorize(Long routeId, User currentUser) {
+        Issue issue = findByRouteId(routeId, currentUser);
 
         boolean isAdmin = currentUser.getRole() == User.Role.ADMIN;
         boolean isOwner = issue.getUser().getId().equals(currentUser.getId());
@@ -149,5 +152,24 @@ public class IssueService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access to this issue.");
 
         return issue;
+    }
+    
+    private Issue findByRouteId(Long routeId, User currentUser) {
+        if (currentUser.getRole() == User.Role.ADMIN) {
+            return issueRepository.findById(routeId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Issue not found."));
+        }
+
+        List<Issue> userIssues = issueRepository.findByUserOrderByIdAsc(currentUser);
+        int index = Math.toIntExact(routeId - 1);
+        if (index < 0 || index >= userIssues.size()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Issue not found.");
+        }
+
+        return userIssues.get(index);
+    }
+
+    private Long getDisplayId(Issue issue) {
+        return issueRepository.countByUserAndIdLessThanEqual(issue.getUser(), issue.getId());
     }
 }

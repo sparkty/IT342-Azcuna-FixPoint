@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,8 +28,7 @@ public class DeleteRequestService {
     // ── User submits a delete request ─────────────────────────────────────────
     @Transactional 
     public DeleteRequestResponse submit(Long issueId, String reason, User currentUser) {
-        Issue issue = issueRepository.findById(issueId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Issue not found."));
+        Issue issue = findByRouteId(issueId, currentUser);
 
         // Only the issue owner can request deletion
         if (!issue.getUser().getId().equals(currentUser.getId()))
@@ -94,8 +94,8 @@ public class DeleteRequestService {
     }
 
     // ── Get pending request for an issue (so frontend can show the panel) ────
-    public Optional<DeleteRequestResponse> getPendingForIssue(Long issueId) {
-        return issueRepository.findById(issueId)
+    public Optional<DeleteRequestResponse> getPendingForIssue(Long issueId, User currentUser) {
+        return Optional.of(findByRouteId(issueId, currentUser))
                 .flatMap(issue -> deleteRequestRepository.findByIssueAndStatus(issue, DeleteRequest.Status.PENDING))
                 .map(DeleteRequestResponse::from);
     }
@@ -112,5 +112,20 @@ public class DeleteRequestService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "This request has already been reviewed.");
 
         return dr;
+    }
+
+    private Issue findByRouteId(Long routeId, User currentUser) {
+        if (currentUser.getRole() == User.Role.ADMIN) {
+            return issueRepository.findById(routeId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Issue not found."));
+        }
+
+        List<Issue> userIssues = issueRepository.findByUserOrderByIdAsc(currentUser);
+        int index = Math.toIntExact(routeId - 1);
+        if (index < 0 || index >= userIssues.size()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Issue not found.");
+        }
+
+        return userIssues.get(index);
     }
 }
