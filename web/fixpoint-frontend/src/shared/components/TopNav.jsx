@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 const TopNav = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAdmin = user.role === 'ADMIN';
+
+   useEffect(() => {
+    document.title = isAdmin ? 'FixPoint - ADMIN' : 'FixPoint';
+  }, [isAdmin]);
 
   return (
     <nav className="top-nav">
