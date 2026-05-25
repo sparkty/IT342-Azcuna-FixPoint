@@ -5,6 +5,8 @@ import DashboardScreen from './features/issues/DashboardScreen.jsx';
 import CreateIssueScreen from './features/issues/CreateIssueScreen.jsx';
 import IssueDetailScreen from './features/issues/IssueDetailScreen.jsx';
 import NotificationsScreen from './features/notifications/NotificationsScreen.jsx';
+import ProfileScreen from './features/account/ProfileScreen.jsx';
+import SettingsScreen from './features/account/SettingsScreen.jsx';
 import ProtectedRoute from './shared/components/ProtectedRoute.jsx';
 
 function App() {
@@ -30,6 +32,16 @@ function App() {
         <Route path="/notifications" element={
           <ProtectedRoute>
             <NotificationsScreen />
+          </ProtectedRoute>
+        } />
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <ProfileScreen />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <SettingsScreen />
           </ProtectedRoute>
         } />
       </Routes>

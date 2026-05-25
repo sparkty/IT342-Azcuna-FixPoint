@@ -38,6 +38,19 @@ public class User {
     private String oauthProvider;
     private String oauthId;
 
+    @Column(columnDefinition = "TEXT")
+    private String bio;
+
+    private String profilePictureFilename;
+
+    private String profilePictureOriginalName;
+
+    @Builder.Default
+    private Boolean emailNotificationsEnabled = true;
+
+    @Builder.Default
+    private Boolean systemAnnouncementsEnabled = true;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean isActive = true;

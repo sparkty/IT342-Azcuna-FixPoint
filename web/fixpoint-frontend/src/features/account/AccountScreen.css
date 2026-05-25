@@ -1,0 +1,238 @@
+.loading-state {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.account-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 0.85fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.account-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.account-panel-title {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 18px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.profile-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.profile-avatar-large {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-family: var(--mono);
+  font-weight: 700;
+  overflow: hidden;
+}
+
+.profile-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-upload {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-upload input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.account-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.account-field label {
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.account-field input,
+.account-field select,
+.account-field textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 10px 12px;
+  outline: none;
+}
+
+.account-field textarea {
+  min-height: 110px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.account-field input[readonly],
+.account-field select:disabled {
+  color: var(--text2);
+  background: rgba(13, 15, 18, 0.55);
+}
+
+.field-hint {
+  color: var(--text3);
+  font-size: 11px;
+}
+
+.account-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.account-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 18px 0;
+}
+
+.account-action-row,
+.setting-toggle,
+.admin-request-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.account-action-title {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.account-pending {
+  border: 1px solid rgba(245, 166, 35, 0.28);
+  background: rgba(245, 166, 35, 0.08);
+  color: var(--accent2);
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 12px;
+}
+
+.account-alert {
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 13px;
+}
+
+.account-alert.success {
+  color: var(--success);
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.account-alert.error {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.btn-sm.danger {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.settings-panel {
+  max-width: 720px;
+}
+
+.setting-toggle {
+  width: 100%;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.setting-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.settings-actions {
+  margin-top: 18px;
+}
+
+.admin-review-panel {
+  width: 100%;
+}
+
+.admin-request-row {
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+}
+
+.request-reason {
+  margin-top: 8px;
+  color: var(--text2);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.admin-request-actions {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 1000px) {
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .account-action-row,
+  .setting-toggle,
+  .admin-request-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

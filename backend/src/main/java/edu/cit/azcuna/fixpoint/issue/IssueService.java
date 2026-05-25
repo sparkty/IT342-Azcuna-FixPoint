@@ -114,13 +114,15 @@ public class IssueService {
             // ── Fire notification to issue owner ──────────────────────────────
             notificationService.createStatusUpdateNotification(saved, oldStatus, request.getStatus());
 
-            emailService.sendStatusUpdateEmail(
-            saved.getUser().getEmail(),
-            saved.getUser().getFirstname(),
-            getDisplayId(saved),
-            saved.getTitle(),
-            saved.getStatus().name()
-            );
+            if (!Boolean.FALSE.equals(saved.getUser().getEmailNotificationsEnabled())) {
+                emailService.sendStatusUpdateEmail(
+                saved.getUser().getEmail(),
+                saved.getUser().getFirstname(),
+                getDisplayId(saved),
+                saved.getTitle(),
+                saved.getStatus().name()
+                );
+            }
 
             return IssueResponse.from(saved, getDisplayId(saved), true);
         }

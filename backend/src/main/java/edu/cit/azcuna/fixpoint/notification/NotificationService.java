@@ -53,6 +53,19 @@ public class NotificationService {
         }
     }
 
+    public void createAccountDeleteRequestNotification(User requestedBy, String reason) {
+        String message = String.format(
+                "%s %s requested account deletion. Reason: %s",
+                requestedBy.getFirstname(),
+                requestedBy.getLastname(),
+                reason
+        );
+        List<User> admins = userRepository.findByRole(User.Role.ADMIN);
+        for (User admin : admins) {
+            save(admin, null, Notification.Type.DELETE_REQUEST, message);
+        }
+    }
+
     // ── Delete approved — notify issue owner ──────────────────────────────────
     public void createDeleteApprovedNotification(User issueOwner, Issue issue) {
         String message = String.format(
@@ -121,6 +134,10 @@ public class NotificationService {
 
     // ── Internal helper ───────────────────────────────────────────────────────
     private void save(User user, Issue issue, Notification.Type type, String message) {
+        if (type == Notification.Type.SYSTEM && Boolean.FALSE.equals(user.getSystemAnnouncementsEnabled())) {
+            return;
+        }
+
         notificationRepository.save(Notification.builder()
                 .user(user).issue(issue).type(type).message(message).isRead(false)
                 .build());

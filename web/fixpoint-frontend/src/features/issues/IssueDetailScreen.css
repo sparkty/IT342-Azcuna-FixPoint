@@ -418,8 +418,7 @@
 
 /* Sticky Sidebar Column */
 .detail-sidebar {
-  position: sticky;
-  top: 16px;
+  position: static;
   align-self: start;
 }
 

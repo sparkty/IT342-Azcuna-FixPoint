@@ -44,6 +44,19 @@ public class FileStorageService {
         return storedName;
     }
 
+    public String storeImage(MultipartFile file) throws IOException {
+        if (file.isEmpty()) throw new IllegalArgumentException("File is empty.");
+        if (!List.of("image/png", "image/jpeg").contains(file.getContentType()))
+            throw new IllegalArgumentException("Only PNG and JPG images are allowed.");
+        if (file.getSize() > MAX_SIZE)
+            throw new IllegalArgumentException("File must be under 10 MB.");
+
+        String originalName = Path.of(file.getOriginalFilename()).getFileName().toString();
+        String storedName = UUID.randomUUID() + "_" + originalName;
+        Files.copy(file.getInputStream(), storageDir.resolve(storedName), StandardCopyOption.REPLACE_EXISTING);
+        return storedName;
+    }
+
     /**
      * Loads a file as a Resource for download/view.
      */

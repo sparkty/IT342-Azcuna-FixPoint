@@ -91,6 +91,23 @@ export const notificationService = {
   markAllAsRead:    ()   => api.put('/notifications/read-all'),
   deleteAllRead:    ()   => api.delete('/notifications/read'),
 };
+
+export const accountService = {
+  getProfile: () => api.get('/account/profile'),
+  updateProfile: (data) => api.put('/account/profile', data),
+  updateProfilePicture: (formData) => api.post('/account/profile-picture', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  changePassword: (data) => api.put('/account/password', data),
+  getSettings: () => api.get('/account/settings'),
+  updateSettings: (data) => api.put('/account/settings', data),
+  linkGoogle: (accessToken) => api.post('/account/google/link', { accessToken }),
+  unlinkGoogle: () => api.delete('/account/google/unlink'),
+  requestDeletion: (reason) => api.post('/account/deletion-request', { reason }),
+  getDeletionRequests: () => api.get('/account/deletion-requests'),
+  approveDeletionRequest: (id) => api.put(`/account/deletion-requests/${id}/approve`),
+  declineDeletionRequest: (id) => api.put(`/account/deletion-requests/${id}/decline`),
+};
 export const deleteRequestService = {
   // Submit a deletion request for an issue
   submit: (issueId, reason) => 

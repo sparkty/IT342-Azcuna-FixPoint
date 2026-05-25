@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../shared/api/api';
 import './LoginRegisterScreen.css';
-import Sidebar from '../../shared/components/Sidebar';
 import { useGoogleLogin } from '@react-oauth/google';
 import TopNav from '../../shared/components/TopNav';
 
@@ -60,6 +59,7 @@ const LoginRegisterScreen = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [visiblePasswords, setVisiblePasswords] = useState({});
 
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginErrors, setLoginErrors] = useState({ email: '', password: '' });
@@ -82,6 +82,10 @@ const LoginRegisterScreen = () => {
     password: '',
     confirmPassword: ''
   });
+
+  const togglePasswordVisibility = (field) => {
+    setVisiblePasswords(prev => ({ ...prev, [field]: !prev[field] }));
+  };
 
   // ── Login Validation ──────────────────────────────────────
   const validateLogin = () => {
@@ -339,6 +343,7 @@ const LoginRegisterScreen = () => {
 
           {/* Left Panel */}
           <div className="auth-left">
+            <img src="/FIXPOINT_LOGO.png" alt="FixPoint logo" className="auth-logo" />
             <div className="auth-brand">FIX_POINT</div>
             <div className="auth-tagline">
               Secure, centralized issue tracking for your organization.
@@ -402,15 +407,25 @@ const LoginRegisterScreen = () => {
 
                 <div className="form-group">
                   <label className="form-label">PASSWORD</label>
+                  <div className="password-input-wrap">
                   <input
-                    type="password"
+                    type={visiblePasswords.login ? 'text' : 'password'}
                     name="password"
                     autoComplete="off"
-                    className={`form-input ${loginErrors.password ? 'input-error' : ''}`}
-                    placeholder="••••••••"
+                    className={`form-input password-input ${loginErrors.password ? 'input-error' : ''}`}
+                    placeholder="Password"
                     value={loginForm.password}
                     onChange={handleLoginChange}
                   />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => togglePasswordVisibility('login')}
+                    aria-label={visiblePasswords.login ? 'Hide password' : 'Show password'}
+                  >
+                    {visiblePasswords.login ? 'Hide' : 'Show'}
+                  </button>
+                  </div>
                   {loginErrors.password && <span className="field-error">{loginErrors.password}</span>}
                 </div>
 
@@ -481,27 +496,47 @@ const LoginRegisterScreen = () => {
 
                 <div className="form-group">
                   <label className="form-label">NEW PASSWORD</label>
+                  <div className="password-input-wrap">
                   <input
-                    type="password"
+                    type={visiblePasswords.reset ? 'text' : 'password'}
                     name="password"
-                    className={`form-input ${resetErrors.password ? 'input-error' : ''}`}
-                    placeholder="••••••••"
+                    className={`form-input password-input ${resetErrors.password ? 'input-error' : ''}`}
+                    placeholder="Password"
                     value={resetForm.password}
                     onChange={handleResetChange}
                   />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => togglePasswordVisibility('reset')}
+                    aria-label={visiblePasswords.reset ? 'Hide password' : 'Show password'}
+                  >
+                    {visiblePasswords.reset ? 'Hide' : 'Show'}
+                  </button>
+                  </div>
                   {resetErrors.password && <span className="field-error">{resetErrors.password}</span>}
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">CONFIRM NEW PASSWORD</label>
+                  <div className="password-input-wrap">
                   <input
-                    type="password"
+                    type={visiblePasswords.resetConfirm ? 'text' : 'password'}
                     name="confirmPassword"
-                    className={`form-input ${resetErrors.confirmPassword ? 'input-error' : ''}`}
-                    placeholder="••••••••"
+                    className={`form-input password-input ${resetErrors.confirmPassword ? 'input-error' : ''}`}
+                    placeholder="Confirm password"
                     value={resetForm.confirmPassword}
                     onChange={handleResetChange}
                   />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => togglePasswordVisibility('resetConfirm')}
+                    aria-label={visiblePasswords.resetConfirm ? 'Hide password' : 'Show password'}
+                  >
+                    {visiblePasswords.resetConfirm ? 'Hide' : 'Show'}
+                  </button>
+                  </div>
                   {resetErrors.confirmPassword && <span className="field-error">{resetErrors.confirmPassword}</span>}
                 </div>
 
@@ -566,15 +601,25 @@ const LoginRegisterScreen = () => {
                   <label className="form-label">
                     PASSWORD
                   </label>
+                  <div className="password-input-wrap">
                   <input
-                    type="password"
+                    type={visiblePasswords.register ? 'text' : 'password'}
                     name="password"
                     autoComplete="off"
-                    className={`form-input ${registerErrors.password ? 'input-error' : ''}`}
-                    placeholder="••••••••"
+                    className={`form-input password-input ${registerErrors.password ? 'input-error' : ''}`}
+                    placeholder="Password"
                     value={registerForm.password}
                     onChange={handleRegisterChange}
                   />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => togglePasswordVisibility('register')}
+                    aria-label={visiblePasswords.register ? 'Hide password' : 'Show password'}
+                  >
+                    {visiblePasswords.register ? 'Hide' : 'Show'}
+                  </button>
+                  </div>
                   <div className="password-tooltip">
                     <div className="tooltip-title">PASSWORD REQUIREMENTS</div>
                     <ul className="tooltip-list">
@@ -586,15 +631,25 @@ const LoginRegisterScreen = () => {
 
                 <div className="form-group">
                   <label className="form-label">CONFIRM PASSWORD</label>
+                  <div className="password-input-wrap">
                   <input
-                    type="password"
+                    type={visiblePasswords.registerConfirm ? 'text' : 'password'}
                     name="confirmPassword"
                     autoComplete="off"
-                    className={`form-input ${registerErrors.confirmPassword ? 'input-error' : ''}`}
-                    placeholder="••••••••"
+                    className={`form-input password-input ${registerErrors.confirmPassword ? 'input-error' : ''}`}
+                    placeholder="Confirm password"
                     value={registerForm.confirmPassword}
                     onChange={handleRegisterChange}
                   />
+                  <button
+                    type="button"
+                    className="password-toggle"
+                    onClick={() => togglePasswordVisibility('registerConfirm')}
+                    aria-label={visiblePasswords.registerConfirm ? 'Hide password' : 'Show password'}
+                  >
+                    {visiblePasswords.registerConfirm ? 'Hide' : 'Show'}
+                  </button>
+                  </div>
                   {registerErrors.confirmPassword && <span className="field-error">{registerErrors.confirmPassword}</span>}
                 </div>
 

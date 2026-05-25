@@ -28,6 +28,7 @@ public class AuthResponse {
         private String firstname;
         private String lastname;
         private String role;
+        private String profilePictureUrl;
     }
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor

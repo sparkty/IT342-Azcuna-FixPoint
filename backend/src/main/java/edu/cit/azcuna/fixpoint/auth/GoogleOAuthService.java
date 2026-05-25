@@ -71,6 +71,7 @@ public class GoogleOAuthService {
                             .firstname(user.getFirstname())
                             .lastname(user.getLastname())
                             .role(user.getRole().name())
+                            .profilePictureUrl(user.getProfilePictureFilename() == null ? null : "/files/" + user.getProfilePictureFilename())
                             .build())
                     .accessToken(newAccessToken)
                     .refreshToken(refreshToken)
@@ -83,7 +84,7 @@ public class GoogleOAuthService {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> verifyGoogleToken(String accessToken) {
+    public Map<String, Object> verifyGoogleToken(String accessToken) {
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
