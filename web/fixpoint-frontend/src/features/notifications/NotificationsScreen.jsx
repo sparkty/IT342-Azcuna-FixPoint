@@ -201,7 +201,7 @@ const NotificationsScreen = () => {
               </div>
             </div>
 
-            <div className="page-body" style={{ padding: '0' }}>
+            <div className="page-body">
               {error && (
                 <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid #ef4444', borderRadius: '6px', padding: '12px', margin: '16px', color: '#ef4444' }}>
                   ⚠ {error}
