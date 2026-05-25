@@ -10,6 +10,10 @@ const DashboardScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [issues, setIssues] = useState([]);
+  const [usersWithIssues, setUsersWithIssues] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [expandedUsers, setExpandedUsers] = useState({});
+  const [activeDashboardTab, setActiveDashboardTab] = useState('issues');
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -22,6 +26,9 @@ const DashboardScreen = () => {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [priorityFilter, setPriorityFilter] = useState('ALL');
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin = user.role === 'ADMIN';
 
   // Fetch issues on component mount
   useEffect(() => {
@@ -36,6 +43,9 @@ const DashboardScreen = () => {
       const issuesData = response.data.data?.content ?? response.data.data ?? [];
       setIssues(issuesData);
       calculateStats(issuesData);
+      if (isAdmin) {
+        fetchUsersWithIssues();
+      }
     } catch (err) {
       const status = err.response?.status;
       if (!status || status === 404) {
@@ -46,6 +56,18 @@ const DashboardScreen = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUsersWithIssues = async () => {
+    setUsersLoading(true);
+    try {
+      const response = await issueService.getUsersWithIssues();
+      setUsersWithIssues(response.data.data ?? []);
+    } catch (err) {
+      console.error('Failed to load users with issues:', err);
+    } finally {
+      setUsersLoading(false);
     }
   };
 
@@ -69,19 +91,8 @@ const DashboardScreen = () => {
     navigate('/create-issue');
   };
 
-  const handleNotifications = () => {
-    navigate('/notifications');
-  };
-
-  const handleLogout = async () => {
-    try {
-      await authService.logout();
-    } finally {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
-      navigate('/');
-    }
+  const toggleUserIssues = (userId) => {
+    setExpandedUsers(prev => ({ ...prev, [userId]: !prev[userId] }));
   };
 
   // Filter issues based on search and filters
@@ -138,11 +149,6 @@ const DashboardScreen = () => {
       default: return priority;
     }
   };
-
-  // Get user from localStorage
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const userInitials = `${user.firstname?.charAt(0) || 'U'}${user.lastname?.charAt(0) || 'R'}`;
-  const userName = `${user.firstname || 'User'} ${user.lastname || ''}`;
 
   if (loading) {
     return (
@@ -213,7 +219,92 @@ const DashboardScreen = () => {
                 </div>
               )}
 
-              <div className="filter-bar">
+              {isAdmin && (
+                <div className="dashboard-tabs">
+                  <button
+                    type="button"
+                    className={`dashboard-tab ${activeDashboardTab === 'users' ? 'active' : ''}`}
+                    onClick={() => setActiveDashboardTab('users')}
+                  >
+                    Users
+                  </button>
+                  <button
+                    type="button"
+                    className={`dashboard-tab ${activeDashboardTab === 'issues' ? 'active' : ''}`}
+                    onClick={() => setActiveDashboardTab('issues')}
+                  >
+                    Issues
+                  </button>
+                </div>
+              )}
+
+              {isAdmin && activeDashboardTab === 'users' ? (
+                <div className="users-panel">
+                  {usersLoading ? (
+                    <div className="panel-empty">Loading users...</div>
+                  ) : usersWithIssues.length === 0 ? (
+                    <div className="panel-empty">No users found.</div>
+                  ) : (
+                    usersWithIssues.map((siteUser) => {
+                      const isExpanded = Boolean(expandedUsers[siteUser.id]);
+                      const initials = `${siteUser.firstname?.charAt(0) || 'U'}${siteUser.lastname?.charAt(0) || ''}`.toUpperCase();
+                      const fullName = `${siteUser.firstname || 'User'} ${siteUser.lastname || ''}`.trim();
+
+                      return (
+                        <div key={siteUser.id} className="user-group">
+                          <button
+                            type="button"
+                            className="user-row"
+                            onClick={() => toggleUserIssues(siteUser.id)}
+                            aria-expanded={isExpanded}
+                          >
+                            <div className="user-avatar">{initials}</div>
+                            <div className="user-info">
+                              <div className="user-name">{fullName}</div>
+                              <div className="user-email">{siteUser.email}</div>
+                            </div>
+                            <span className={`badge ${siteUser.role === 'ADMIN' ? 'high' : 'low'}`}>{siteUser.role}</span>
+                            <div className="user-issue-count">{siteUser.issueCount} issue{siteUser.issueCount === 1 ? '' : 's'}</div>
+                            <div className="user-chevron">{isExpanded ? '-' : '+'}</div>
+                          </button>
+
+                          {isExpanded && (
+                            <div className="user-issues">
+                              {siteUser.issues.length === 0 ? (
+                                <div className="user-issue-empty">No issues submitted by this user.</div>
+                              ) : (
+                                siteUser.issues.map((issue) => (
+                                  <button
+                                    type="button"
+                                    key={issue.id}
+                                    className="user-issue-row"
+                                    onClick={() => handleViewIssue(issue)}
+                                  >
+                                    <div className="issue-id">#{issue.displayId ?? issue.id}</div>
+                                    <div className="issue-title-cell">
+                                      <div className="issue-title-text">{issue.title}</div>
+                                      <div className="issue-desc">{issue.description?.substring(0, 100)}...</div>
+                                    </div>
+                                    <span className="badge low">{issue.category}</span>
+                                    <span className={getPriorityBadgeClass(issue.priority)}>
+                                      {getPriorityDisplay(issue.priority)}
+                                    </span>
+                                    <span className={getStatusBadgeClass(issue.status)}>
+                                      {getStatusDisplay(issue.status)}
+                                    </span>
+                                  </button>
+                                ))
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="filter-bar">
                 <input
                   type="text"
                   className="search-input"
@@ -298,7 +389,9 @@ const DashboardScreen = () => {
                     </div>
                   ))
                 )}
-              </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

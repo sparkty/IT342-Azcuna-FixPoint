@@ -13,6 +13,7 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
     // Users see only their own issues
     Page<Issue> findByUser(User user, Pageable pageable);
     List<Issue> findByUserOrderByIdAsc(User user);
+    List<Issue> findByUserOrderByCreatedAtDesc(User user);
     long countByUserAndIdLessThanEqual(User user, Long id);
     Page<Issue> findByUserAndStatus(User user, Issue.Status status, Pageable pageable);
     Page<Issue> findByUserAndCategory(User user, Issue.Category category, Pageable pageable);

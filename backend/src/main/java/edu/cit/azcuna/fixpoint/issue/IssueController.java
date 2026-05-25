@@ -2,6 +2,7 @@ package edu.cit.azcuna.fixpoint.auth;
 
 import edu.cit.azcuna.fixpoint.dto.*;
 import edu.cit.azcuna.fixpoint.entity.User;
+import edu.cit.azcuna.fixpoint.repository.IssueRepository;
 import edu.cit.azcuna.fixpoint.repository.UserRepository;
 import edu.cit.azcuna.fixpoint.service.IssueService;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -24,6 +26,7 @@ public class IssueController {
 
     private final IssueService issueService;
     private final UserRepository userRepository;
+    private final IssueRepository issueRepository;
 
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -69,6 +72,33 @@ public class IssueController {
         User currentUser = getCurrentUser();
         IssueResponse issue = issueService.getById(id, currentUser);
         return ResponseEntity.ok(success(issue));
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<Map<String, Object>> listUsersWithIssues() {
+        User currentUser = getCurrentUser();
+        if (currentUser.getRole() != User.Role.ADMIN) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(success("Only admins can view all users."));
+        }
+
+        List<UserIssuesResponse> users = userRepository.findAll()
+                .stream()
+                .map(user -> {
+                    List<IssueResponse> issues = issueRepository.findByUserOrderByCreatedAtDesc(user)
+                            .stream()
+                            .map(issue -> IssueResponse.from(
+                                    issue,
+                                    issueRepository.countByUserAndIdLessThanEqual(issue.getUser(), issue.getId()),
+                                    false
+                            ))
+                            .toList();
+
+                    return UserIssuesResponse.from(user, issues);
+                })
+                .toList();
+
+        return ResponseEntity.ok(success(users));
     }
 
     private Map<String, Object> success(Object data) {

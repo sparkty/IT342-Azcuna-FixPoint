@@ -77,6 +77,7 @@ export const issueService = {
   }),
   updateIssue:  (id, data)    => api.put(`/issues/${id}`, data),
   deleteIssue:  (id)          => api.delete(`/issues/${id}`),
+  getUsersWithIssues: ()      => api.get('/issues/users'),
 };
 
 export const commentService = {
