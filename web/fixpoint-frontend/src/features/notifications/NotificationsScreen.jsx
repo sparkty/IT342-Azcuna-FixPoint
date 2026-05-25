@@ -1,13 +1,15 @@
 // NotificationsScreen.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { notificationService } from '../../shared/api/api';
+import { notificationService, authService } from '../../shared/api/api';
+import { useToast } from '../../shared/components/Toast';
 import './NotificationsScreen.css';
 import Sidebar from '../../shared/components/Sidebar';
 import TopNav from '../../shared/components/TopNav';
 
 const NotificationsScreen = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [notifications, setNotifications] = useState([]);
@@ -44,8 +46,9 @@ const NotificationsScreen = () => {
     ));
     try {
       await notificationService.markAsRead(notificationId);
-      setNotifications(previousNotifications);
+      window.dispatchEvent(new Event('notificationsUpdated'));
     } catch (err) {
+      setNotifications(previousNotifications);
       console.error('Failed to mark as read:', err);
     }
   };
@@ -56,9 +59,12 @@ const NotificationsScreen = () => {
 
     try {
       await notificationService.markAllAsRead();
-      } catch (err) {
+      window.dispatchEvent(new Event('notificationsUpdated'));
+      showToast('All notifications marked as read.', 'success');
+    } catch (err) {
       setNotifications(previousNotifications);
       console.error('Failed to mark all as read:', err);
+      showToast('Failed to mark all notifications as read.', 'error');
     }
   };
 
@@ -69,9 +75,12 @@ const NotificationsScreen = () => {
     try {
       await notificationService.deleteAllRead();
       await fetchNotifications({ showLoader: false });
+      window.dispatchEvent(new Event('notificationsUpdated'));
+      showToast('Read notifications deleted.', 'success');
     } catch (err) {
       setNotifications(previousNotifications);
       console.error('Failed to delete read notifications:', err);
+      showToast('Failed to delete read notifications.', 'error');
     } finally {
       setDeletingRead(false);
     }
@@ -95,6 +104,8 @@ const NotificationsScreen = () => {
   const handleLogout = async () => {
     try {
       await authService.logout();
+    } catch (err) {
+      console.error('API logout failed, performing local logout:', err);
     } finally {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');

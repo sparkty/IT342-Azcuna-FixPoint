@@ -1,29 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { issueService } from '../../shared/api/api';
+import { issueService, authService } from '../../shared/api/api';
+import { useToast } from '../../shared/components/Toast';
 import './CreateIssueScreen.css';
 import Sidebar from '../../shared/components/Sidebar';
 import TopNav from '../../shared/components/TopNav';
 
 const CreateIssueScreen = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [location, setLocation] = useState(null);
 
   useEffect(() => {
-  fetch('http://ip-api.com/json')
-    .then(res => res.json())
-    .then(data => {
-      if (data.status === 'success') {
-        setLocation({ city: data.city, region: data.regionName });
-      }
-    })
-    .catch(() => {
-      // silently fail — location hint is optional
-    });
-}, []);
+    fetch('https://freeipapi.com/api/json')
+      .then(res => res.json())
+      .then(data => {
+        if (data.cityName) {
+          setLocation({ city: data.cityName, region: data.regionName });
+        }
+      })
+      .catch(() => {
+        // silently fail — location hint is optional
+      });
+  }, []);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -63,6 +65,8 @@ const CreateIssueScreen = () => {
   const handleLogout = async () => {
     try {
       await authService.logout();
+    } catch (err) {
+      console.error('API logout failed, performing local logout:', err);
     } finally {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
@@ -120,6 +124,7 @@ const CreateIssueScreen = () => {
       const created = response.data.data;
 
       setSuccess('Issue created successfully!');
+      showToast('Issue created successfully!', 'success');
       setFormData({ title: '', category: '', priority: 'MEDIUM', description: '' });
       setAttachments([]);
 
@@ -127,6 +132,7 @@ const CreateIssueScreen = () => {
     } catch (err) {
       const msg = err.response?.data?.error?.message ?? 'Failed to create issue. Please try again.';
       setError(msg);
+      showToast(msg, 'error');
     } finally {
       setLoading(false);
     }
@@ -140,6 +146,7 @@ const CreateIssueScreen = () => {
     };
     localStorage.setItem('issueDraft', JSON.stringify(draft));
     setSuccess('Draft saved locally!');
+    showToast('Draft saved locally!', 'success');
     setTimeout(() => setSuccess(''), 2000);
   };
 

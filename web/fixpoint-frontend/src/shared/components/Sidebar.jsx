@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { notificationService } from '../../shared/api/api';
+import { notificationService, authService } from '../../shared/api/api';
  
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -14,6 +14,12 @@ const Sidebar = () => {
   // Fetch unread count on mount and whenever route changes
   useEffect(() => {
     fetchUnreadCount();
+
+    // Listen for custom event to sync unread badge in real-time
+    window.addEventListener('notificationsUpdated', fetchUnreadCount);
+    return () => {
+      window.removeEventListener('notificationsUpdated', fetchUnreadCount);
+    };
   }, [location.pathname]);
  
   const fetchUnreadCount = async () => {
@@ -30,6 +36,8 @@ const Sidebar = () => {
   const handleLogout = async () => {
     try {
       await authService.logout();
+    } catch (err) {
+      console.error('API logout failed, performing local logout:', err);
     } finally {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');

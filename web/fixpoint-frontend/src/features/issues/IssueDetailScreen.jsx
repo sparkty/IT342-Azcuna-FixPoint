@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import api, { issueService, deleteRequestService, commentService } from '../../shared/api/api';
+import api, { issueService, deleteRequestService, commentService, authService } from '../../shared/api/api';
+import { useToast } from '../../shared/components/Toast';
 import './IssueDetailScreen.css';
 import Sidebar from '../../shared/components/Sidebar';
 import TopNav from '../../shared/components/TopNav';
@@ -8,6 +9,7 @@ import TopNav from '../../shared/components/TopNav';
 const IssueDetailScreen = () => {
   const navigate = useNavigate();
   const { id } = useParams(); // Get issue ID from URL (e.g., /issue/42)
+  const { showToast } = useToast();
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -69,8 +71,10 @@ const IssueDetailScreen = () => {
         comments: updated.comments ?? issue.comments ?? []
       });
       setSelectedStatus(updated.status);
+      showToast('Status updated successfully!', 'success');
     } catch (err) {
       setError('Failed to update status.');
+      showToast('Failed to update status.', 'error');
     } finally {
       setUpdatingStatus(false);
     }
@@ -89,8 +93,10 @@ const IssueDetailScreen = () => {
         updatedAt: newCommentData.createdAt || issue.updatedAt
       });
       setNewComment('');
+      showToast('Comment posted successfully!', 'success');
     } catch (err) {
       setError('Failed to add comment');
+      showToast('Failed to add comment', 'error');
     } finally {
       setCommentLoading(false);
     }
@@ -99,14 +105,12 @@ const IssueDetailScreen = () => {
   const handleSubmitDeleteRequest = async () => {
 
     console.log('=== SUBMITTING DELETE REQUEST ===');
-  console.log('Issue ID:', id);
-  console.log('Reason:', deleteReason);
-  console.log('User:', user);
-  console.log('User ID:', user.id);
-  console.log('Issue User ID:', issue?.userId);
-  console.log('Is Owner:', issue?.userId === user.id);
-
-
+    console.log('Issue ID:', id);
+    console.log('Reason:', deleteReason);
+    console.log('User:', user);
+    console.log('User ID:', user.id);
+    console.log('Issue User ID:', issue?.userId);
+    console.log('Is Owner:', issue?.userId === user.id);
 
     if (!deleteReason.trim()) {
       setDeleteMsg('Please provide a reason.');
@@ -117,6 +121,7 @@ const IssueDetailScreen = () => {
     try {
       await deleteRequestService.submit(id, deleteReason);
       setDeleteMsg('✓ Deletion request submitted. An admin will review it shortly.');
+      showToast('Deletion request submitted successfully!', 'success');
       setShowDeleteForm(false);
       setDeleteReason('');
       // Refresh to show the pending state
@@ -125,6 +130,7 @@ const IssueDetailScreen = () => {
     } catch (err) {
       const msg = err.response?.data?.error?.message ?? 'Failed to submit request.';
       setDeleteMsg(msg);
+      showToast(msg, 'error');
     } finally {
       setDeleteLoading(false);
     }
@@ -135,9 +141,11 @@ const IssueDetailScreen = () => {
     setDeleteLoading(true);
     try {
       await deleteRequestService.approve(deleteRequest.id);
+      showToast('Deletion request approved.', 'success');
       navigate('/dashboard'); // issue is gone, go back
     } catch (err) {
       setDeleteMsg('Failed to approve deletion.');
+      showToast('Failed to approve deletion.', 'error');
     } finally {
       setDeleteLoading(false);
     }
@@ -150,8 +158,10 @@ const IssueDetailScreen = () => {
       await deleteRequestService.decline(deleteRequest.id);
       setDeleteRequest(null);
       setDeleteMsg('Delete request declined. User has been notified.');
+      showToast('Deletion request declined.', 'success');
     } catch (err) {
       setDeleteMsg('Failed to decline request.');
+      showToast('Failed to decline request.', 'error');
     } finally {
       setDeleteLoading(false);
     }
@@ -189,6 +199,8 @@ const IssueDetailScreen = () => {
   const handleLogout = async () => {
     try {
       await authService.logout();
+    } catch (err) {
+      console.error('API logout failed, performing local logout:', err);
     } finally {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
@@ -196,8 +208,6 @@ const IssueDetailScreen = () => {
       navigate('/');
     }
   };
-
-
 
   // Get user from localStorage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -331,7 +341,7 @@ const IssueDetailScreen = () => {
               )}
 
               {issue && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '16px' }}>
+                <div className="issue-detail-layout">
                   {/* Left Column - Main Content */}
                   <div>
                     {/* Issue Header */}
