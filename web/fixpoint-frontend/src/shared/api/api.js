@@ -65,6 +65,8 @@ export const authService = {
   login:       (data) => api.post('/auth/login', data),
   googleLogin: (accessToken) => api.post('/auth/google', { idToken: accessToken }),
   logout:      () => api.post('/auth/logout'),
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  resetPassword:  (data) => api.post('/auth/reset-password', data),
 };
 
 export const issueService = {

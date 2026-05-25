@@ -1,7 +1,9 @@
 package edu.cit.azcuna.fixpoint.service;
 
 import edu.cit.azcuna.fixpoint.dto.*;
+import edu.cit.azcuna.fixpoint.entity.PasswordResetToken;
 import edu.cit.azcuna.fixpoint.entity.User;
+import edu.cit.azcuna.fixpoint.repository.PasswordResetTokenRepository;
 import edu.cit.azcuna.fixpoint.repository.UserRepository;
 import edu.cit.azcuna.fixpoint.shared.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -10,11 +12,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import edu.cit.azcuna.fixpoint.email.EmailService;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
@@ -92,6 +98,41 @@ public class AuthService {
         } catch (Exception e) {
             return AuthResponse.error("AUTH-002", "Token expired or invalid", e.getMessage());
         }
+    }
+
+    public AuthResponse forgotPassword(ForgotPasswordRequest request) {
+        userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
+            passwordResetTokenRepository.deleteByUser(user);
+
+            PasswordResetToken resetToken = PasswordResetToken.builder()
+                    .user(user)
+                    .token(UUID.randomUUID().toString())
+                    .expiresAt(LocalDateTime.now().plusHours(1))
+                    .build();
+
+            passwordResetTokenRepository.save(resetToken);
+            emailService.sendPasswordResetEmail(user.getEmail(), user.getFirstname(), resetToken.getToken());
+        });
+
+        return AuthResponse.success("If an account exists for that email, a password reset link has been sent.");
+    }
+
+    public AuthResponse resetPassword(ResetPasswordRequest request) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.getToken())
+                .orElse(null);
+
+        if (resetToken == null || resetToken.getUsed() || resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            return AuthResponse.error("AUTH-003", "Reset link is invalid or expired", null);
+        }
+
+        User user = resetToken.getUser();
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        userRepository.save(user);
+
+        resetToken.setUsed(true);
+        passwordResetTokenRepository.save(resetToken);
+
+        return AuthResponse.success("Password reset successfully. You can now sign in.");
     }
 
     private AuthResponse.UserData toUserData(User user) {

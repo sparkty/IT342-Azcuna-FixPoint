@@ -10,6 +10,13 @@ const LoginRegisterScreen = () => {
   const navigate = useNavigate();
 
   React.useEffect(() => {
+    const resetToken = new URLSearchParams(window.location.search).get('resetToken');
+    if (resetToken) {
+      setActiveTab('reset');
+      setResetForm(prev => ({ ...prev, token: resetToken }));
+      return;
+    }
+
     const token = localStorage.getItem('accessToken');
     const user = localStorage.getItem('user');
     if (token && user) {
@@ -56,6 +63,10 @@ const LoginRegisterScreen = () => {
 
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginErrors, setLoginErrors] = useState({ email: '', password: '' });
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotEmailError, setForgotEmailError] = useState('');
+  const [resetForm, setResetForm] = useState({ token: '', password: '', confirmPassword: '' });
+  const [resetErrors, setResetErrors] = useState({ password: '', confirmPassword: '' });
 
   const [registerForm, setRegisterForm] = useState({
     firstName: '',
@@ -212,7 +223,81 @@ const LoginRegisterScreen = () => {
   };
 
 
-  const handleForgotPassword = () => console.log('Forgot password clicked');
+  const handleForgotPassword = () => {
+    setActiveTab('forgot');
+    setForgotEmail(loginForm.email);
+    setError('');
+    setSuccess('');
+    setForgotEmailError('');
+  };
+
+  const handleForgotSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    if (!forgotEmail) {
+      setForgotEmailError('Email is required.');
+      return;
+    }
+    if (!/\S+@\S+\.\S+/.test(forgotEmail)) {
+      setForgotEmailError('Enter a valid email address.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await authService.forgotPassword(forgotEmail);
+      setSuccess('If that email exists, a reset link has been sent.');
+    } catch (err) {
+      const msg = err.response?.data?.error?.message || 'Failed to send reset link. Please try again.';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetChange = (e) => {
+    setResetForm({ ...resetForm, [e.target.name]: e.target.value });
+    setResetErrors({ ...resetErrors, [e.target.name]: '' });
+    setError('');
+  };
+
+  const handleResetSubmit = async (e) => {
+    e.preventDefault();
+    const errors = { password: '', confirmPassword: '' };
+
+    if (!resetForm.password) {
+      errors.password = 'Password is required.';
+    } else if (resetForm.password.length < 8) {
+      errors.password = 'Password must be at least 8 characters.';
+    }
+
+    if (!resetForm.confirmPassword) {
+      errors.confirmPassword = 'Please confirm your password.';
+    } else if (resetForm.password !== resetForm.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match.';
+    }
+
+    setResetErrors(errors);
+    if (errors.password || errors.confirmPassword) return;
+
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      await authService.resetPassword({ token: resetForm.token, password: resetForm.password });
+      setSuccess('Password reset successfully. Please sign in.');
+      window.history.replaceState({}, document.title, window.location.pathname);
+      setResetForm({ token: '', password: '', confirmPassword: '' });
+      setTimeout(() => switchTab('login'), 1200);
+    } catch (err) {
+      const msg = err.response?.data?.error?.message || 'Reset link is invalid or expired.';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const switchTab = (tab) => {
   setActiveTab(tab);
@@ -222,6 +307,8 @@ const LoginRegisterScreen = () => {
   // Clear form errors
   setLoginErrors({ email: '', password: '' });
   setRegisterErrors({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '' });
+  setForgotEmailError('');
+  setResetErrors({ password: '', confirmPassword: '' });
 
   // Clear form inputs
   if (tab === 'login') {
@@ -234,6 +321,10 @@ const LoginRegisterScreen = () => {
       password: '',
       confirmPassword: ''
     });
+  } else if (tab === 'forgot') {
+    setForgotEmail('');
+  } else if (tab === 'reset') {
+    setResetForm({ token: resetForm.token, password: '', confirmPassword: '' });
   }
 };
 
@@ -348,6 +439,78 @@ const LoginRegisterScreen = () => {
                     <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
                   </svg>
                   Continue with Google
+                </button>
+              </form>
+            )}
+
+            {activeTab === 'forgot' && (
+              <form onSubmit={handleForgotSubmit} className="auth-form" autoComplete="off">
+                <div className="auth-form-title">Reset password</div>
+                <div className="auth-form-sub">Enter your account email and we'll send a reset link.</div>
+
+                <div className="form-group">
+                  <label className="form-label">EMAIL ADDRESS</label>
+                  <input
+                    type="email"
+                    className={`form-input ${forgotEmailError ? 'input-error' : ''}`}
+                    placeholder="you@example.com"
+                    value={forgotEmail}
+                    onChange={(e) => {
+                      setForgotEmail(e.target.value);
+                      setForgotEmailError('');
+                      setError('');
+                    }}
+                  />
+                  {forgotEmailError && <span className="field-error">{forgotEmailError}</span>}
+                </div>
+
+                <button type="submit" className="btn-primary" disabled={loading}>
+                  {loading ? 'SENDING...' : 'SEND RESET LINK'}
+                </button>
+
+                <button type="button" className="btn-secondary" onClick={() => switchTab('login')} disabled={loading}>
+                  BACK TO SIGN IN
+                </button>
+              </form>
+            )}
+
+            {activeTab === 'reset' && (
+              <form onSubmit={handleResetSubmit} className="auth-form" autoComplete="off">
+                <div className="auth-form-title">Choose new password</div>
+                <div className="auth-form-sub">Enter a new password for your FixPoint account.</div>
+
+                <div className="form-group">
+                  <label className="form-label">NEW PASSWORD</label>
+                  <input
+                    type="password"
+                    name="password"
+                    className={`form-input ${resetErrors.password ? 'input-error' : ''}`}
+                    placeholder="••••••••"
+                    value={resetForm.password}
+                    onChange={handleResetChange}
+                  />
+                  {resetErrors.password && <span className="field-error">{resetErrors.password}</span>}
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">CONFIRM NEW PASSWORD</label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    className={`form-input ${resetErrors.confirmPassword ? 'input-error' : ''}`}
+                    placeholder="••••••••"
+                    value={resetForm.confirmPassword}
+                    onChange={handleResetChange}
+                  />
+                  {resetErrors.confirmPassword && <span className="field-error">{resetErrors.confirmPassword}</span>}
+                </div>
+
+                <button type="submit" className="btn-primary" disabled={loading}>
+                  {loading ? 'RESETTING...' : 'RESET PASSWORD'}
+                </button>
+
+                <button type="button" className="btn-secondary" onClick={() => switchTab('login')} disabled={loading}>
+                  BACK TO SIGN IN
                 </button>
               </form>
             )}

@@ -26,6 +26,9 @@ public class EmailService {
     @Value("${app.mail.name}")
     private String fromName;
 
+    @Value("${app.frontend.url:http://localhost:5173}")
+    private String frontendUrl;
+
     @Async
     public void sendWelcomeEmail(String toEmail, String firstname) {
         Context context = new Context();
@@ -49,6 +52,16 @@ public class EmailService {
 
         String html = templateEngine.process("email/issue-status-update", context);
         sendHtmlEmail(toEmail, "FixPoint - Issue #" + issueDisplayId + " Status Updated", html);
+    }
+
+    @Async
+    public void sendPasswordResetEmail(String toEmail, String firstname, String token) {
+        Context context = new Context();
+        context.setVariable("firstname", firstname);
+        context.setVariable("resetUrl", frontendUrl + "/?resetToken=" + token);
+
+        String html = templateEngine.process("email/password-reset", context);
+        sendHtmlEmail(toEmail, "FixPoint - Reset your password", html);
     }
 
     private void sendHtmlEmail(String to, String subject, String htmlBody) {

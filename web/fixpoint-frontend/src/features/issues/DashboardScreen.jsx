@@ -19,9 +19,9 @@ const DashboardScreen = () => {
   
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All Status');
-  const [categoryFilter, setCategoryFilter] = useState('All Categories');
-  const [priorityFilter, setPriorityFilter] = useState('All Priority');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [categoryFilter, setCategoryFilter] = useState('ALL');
+  const [priorityFilter, setPriorityFilter] = useState('ALL');
 
   // Fetch issues on component mount
   useEffect(() => {
@@ -86,11 +86,14 @@ const DashboardScreen = () => {
 
   // Filter issues based on search and filters
   const filteredIssues = issues.filter(issue => {
-    const matchesSearch = issue.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          issue.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'All Status' || issue.status === statusFilter;
-    const matchesCategory = categoryFilter === 'All Categories' || issue.category === categoryFilter;
-    const matchesPriority = priorityFilter === 'All Priority' || issue.priority === priorityFilter;
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+    const matchesSearch = !normalizedSearch ||
+      issue.title?.toLowerCase().includes(normalizedSearch) ||
+      issue.description?.toLowerCase().includes(normalizedSearch) ||
+      String(issue.displayId ?? issue.id ?? '').includes(normalizedSearch);
+    const matchesStatus = statusFilter === 'ALL' || issue.status === statusFilter;
+    const matchesCategory = categoryFilter === 'ALL' || issue.category === categoryFilter;
+    const matchesPriority = priorityFilter === 'ALL' || issue.priority === priorityFilter;
     return matchesSearch && matchesStatus && matchesCategory && matchesPriority;
   });
 
@@ -223,30 +226,31 @@ const DashboardScreen = () => {
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                 >
-                  <option>All Status</option>
-                  <option>Pending</option>
-                  <option>In Progress</option>
-                  <option>Resolved</option>
+                  <option value="ALL">All Status</option>
+                  <option value="PENDING">Pending</option>
+                  <option value="IN_PROGRESS">In Progress</option>
+                  <option value="RESOLVED">Resolved</option>
                 </select>
                 <select
                   className="filter-select"
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
                 >
-                  <option>All Categories</option>
-                  <option>Bug</option>
-                  <option>Feature</option>
-                  <option>Access</option>
+                  <option value="ALL">All Categories</option>
+                  <option value="TECHNICAL">Technical</option>
+                  <option value="BILLING">Billing</option>
+                  <option value="GENERAL">General</option>
+                  <option value="OTHER">Other</option>
                 </select>
                 <select
                   className="filter-select"
                   value={priorityFilter}
                   onChange={(e) => setPriorityFilter(e.target.value)}
                 >
-                  <option>All Priority</option>
-                  <option>High</option>
-                  <option>Medium</option>
-                  <option>Low</option>
+                  <option value="ALL">All Priority</option>
+                  <option value="HIGH">High</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="LOW">Low</option>
                 </select>
               </div>
 

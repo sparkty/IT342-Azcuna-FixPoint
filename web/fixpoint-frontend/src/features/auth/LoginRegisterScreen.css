@@ -356,6 +356,34 @@
   opacity: 0.9;
 }
 
+.btn-secondary {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 10px;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--text3);
+  background: var(--surface2);
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .auth-divider {
   text-align: center;
   color: var(--text3);
@@ -468,6 +496,18 @@
   background: rgba(16, 185, 129, 0.1);
   border: 1px solid var(--success);
   color: var(--success);
+}
+
+.field-error {
+  display: block;
+  color: var(--error);
+  font-size: 10px;
+  font-family: var(--mono);
+  margin-top: 6px;
+}
+
+.input-error {
+  border-color: var(--error);
 }
 
 

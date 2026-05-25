@@ -31,6 +31,18 @@ public class AuthController {
         return ResponseEntity.status(status).body(response);
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<AuthResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        return ResponseEntity.ok(authService.forgotPassword(request));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<AuthResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        AuthResponse response = authService.resetPassword(request);
+        int status = response.isSuccess() ? 200 : 400;
+        return ResponseEntity.status(status).body(response);
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<AuthResponse> logout() {
         return ResponseEntity.ok(AuthResponse.success(null));
