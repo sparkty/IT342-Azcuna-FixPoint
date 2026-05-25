@@ -26,6 +26,12 @@ const DashboardScreen = () => {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [priorityFilter, setPriorityFilter] = useState('ALL');
+  const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [userStatusFilter, setUserStatusFilter] = useState('ALL');
+  const [userCategoryFilter, setUserCategoryFilter] = useState('ALL');
+  const [userPriorityFilter, setUserPriorityFilter] = useState('ALL');
+  const [userSortFilter, setUserSortFilter] = useState('ALPHA_ASC');
+  const [userGroupFilter, setUserGroupFilter] = useState('NONE');
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isAdmin = user.role === 'ADMIN';
@@ -107,6 +113,98 @@ const DashboardScreen = () => {
     const matchesPriority = priorityFilter === 'ALL' || issue.priority === priorityFilter;
     return matchesSearch && matchesStatus && matchesCategory && matchesPriority;
   });
+
+  const getFullName = (siteUser) => {
+    return `${siteUser.firstname || 'User'} ${siteUser.lastname || ''}`.trim();
+  };
+
+  const getUserPriorityRank = (siteUser) => {
+    const priorities = (siteUser.filteredIssues ?? siteUser.issues ?? []).map(issue => issue.priority);
+    if (priorities.includes('HIGH') || priorities.includes('High')) return 3;
+    if (priorities.includes('MEDIUM') || priorities.includes('Medium')) return 2;
+    if (priorities.includes('LOW') || priorities.includes('Low')) return 1;
+    return 0;
+  };
+
+  const getUserPriorityGroup = (siteUser) => {
+    switch (getUserPriorityRank(siteUser)) {
+      case 3: return 'HIGH';
+      case 2: return 'MEDIUM';
+      case 1: return 'LOW';
+      default: return 'NONE';
+    }
+  };
+
+  const sortUsers = (usersToSort) => {
+    return [...usersToSort].sort((a, b) => {
+      const nameA = getFullName(a).toLowerCase();
+      const nameB = getFullName(b).toLowerCase();
+      const issueCountA = a.filteredIssueCount ?? a.issueCount ?? 0;
+      const issueCountB = b.filteredIssueCount ?? b.issueCount ?? 0;
+
+      switch (userSortFilter) {
+        case 'ALPHA_DESC':
+          return nameB.localeCompare(nameA);
+        case 'ISSUES_DESC':
+          return issueCountB - issueCountA || nameA.localeCompare(nameB);
+        case 'ISSUES_ASC':
+          return issueCountA - issueCountB || nameA.localeCompare(nameB);
+        case 'ALPHA_ASC':
+        default:
+          return nameA.localeCompare(nameB);
+      }
+    });
+  };
+
+  const filteredUsers = sortUsers(
+    usersWithIssues
+      .map((siteUser) => {
+        const normalizedSearch = userSearchTerm.trim().toLowerCase();
+        const fullName = getFullName(siteUser);
+        const matchesUserSearch = !normalizedSearch ||
+          fullName.toLowerCase().includes(normalizedSearch) ||
+          siteUser.email?.toLowerCase().includes(normalizedSearch);
+
+        const filteredUserIssues = (siteUser.issues ?? []).filter((issue) => {
+          const matchesIssueSearch = !normalizedSearch ||
+            issue.title?.toLowerCase().includes(normalizedSearch) ||
+            issue.description?.toLowerCase().includes(normalizedSearch) ||
+            String(issue.displayId ?? issue.id ?? '').includes(normalizedSearch);
+          const matchesStatus = userStatusFilter === 'ALL' || issue.status === userStatusFilter;
+          const matchesCategory = userCategoryFilter === 'ALL' || issue.category === userCategoryFilter;
+          const matchesPriority = userPriorityFilter === 'ALL' || issue.priority === userPriorityFilter;
+
+          return matchesIssueSearch && matchesStatus && matchesCategory && matchesPriority;
+        });
+
+        const issueFiltersActive =
+          userStatusFilter !== 'ALL' ||
+          userCategoryFilter !== 'ALL' ||
+          userPriorityFilter !== 'ALL';
+        const searchMatchesIssue = filteredUserIssues.length > 0;
+        const searchMatchesUser = matchesUserSearch && !issueFiltersActive;
+        const shouldShowUser = searchMatchesUser || searchMatchesIssue;
+
+        if (!shouldShowUser) return null;
+
+        const displayedUserIssues = searchMatchesUser
+          ? (siteUser.issues ?? [])
+          : filteredUserIssues;
+
+        return {
+          ...siteUser,
+          filteredIssues: displayedUserIssues,
+          filteredIssueCount: displayedUserIssues.length
+        };
+      })
+      .filter(Boolean)
+  );
+
+  const groupedUsers = [
+    { key: 'HIGH', title: 'High Priority', users: filteredUsers.filter(siteUser => getUserPriorityGroup(siteUser) === 'HIGH') },
+    { key: 'MEDIUM', title: 'Medium Priority', users: filteredUsers.filter(siteUser => getUserPriorityGroup(siteUser) === 'MEDIUM') },
+    { key: 'LOW', title: 'Low Priority', users: filteredUsers.filter(siteUser => getUserPriorityGroup(siteUser) === 'LOW') }
+  ];
 
   const getStatusBadgeClass = (status) => {
     switch(status) {
@@ -245,10 +343,145 @@ const DashboardScreen = () => {
                   ) : usersWithIssues.length === 0 ? (
                     <div className="panel-empty">No users found.</div>
                   ) : (
-                    usersWithIssues.map((siteUser) => {
+                    <>
+                      <div className="filter-bar users-filter-bar">
+                        <input
+                          type="text"
+                          className="search-input"
+                          placeholder="Search users by name, email, or issue..."
+                          value={userSearchTerm}
+                          onChange={(e) => setUserSearchTerm(e.target.value)}
+                        />
+                        <select
+                          className="filter-select"
+                          value={userStatusFilter}
+                          onChange={(e) => setUserStatusFilter(e.target.value)}
+                        >
+                          <option value="ALL">All Status</option>
+                          <option value="PENDING">Pending</option>
+                          <option value="IN_PROGRESS">In Progress</option>
+                          <option value="RESOLVED">Resolved</option>
+                        </select>
+                        <select
+                          className="filter-select"
+                          value={userCategoryFilter}
+                          onChange={(e) => setUserCategoryFilter(e.target.value)}
+                        >
+                          <option value="ALL">All Categories</option>
+                          <option value="TECHNICAL">Technical</option>
+                          <option value="BILLING">Billing</option>
+                          <option value="GENERAL">General</option>
+                          <option value="OTHER">Other</option>
+                        </select>
+                        <select
+                          className="filter-select"
+                          value={userPriorityFilter}
+                          onChange={(e) => setUserPriorityFilter(e.target.value)}
+                        >
+                          <option value="ALL">All Priority</option>
+                          <option value="HIGH">High</option>
+                          <option value="MEDIUM">Medium</option>
+                          <option value="LOW">Low</option>
+                        </select>
+                        <select
+                          className="filter-select"
+                          value={userSortFilter}
+                          onChange={(e) => setUserSortFilter(e.target.value)}
+                        >
+                          <option value="ALPHA_ASC">Alphabetical A-Z</option>
+                          <option value="ALPHA_DESC">Alphabetical Z-A</option>
+                          <option value="ISSUES_DESC">Most Issues</option>
+                          <option value="ISSUES_ASC">Least Issues</option>
+                        </select>
+                        <select
+                          className="filter-select"
+                          value={userGroupFilter}
+                          onChange={(e) => setUserGroupFilter(e.target.value)}
+                        >
+                          <option value="NONE">No Grouping</option>
+                          <option value="PRIORITY">Group by Priority</option>
+                        </select>
+                      </div>
+
+                      {filteredUsers.length === 0 ? (
+                        <div className="panel-empty">No users match your filters.</div>
+                      ) : userGroupFilter === 'PRIORITY' ? (
+                        groupedUsers.map((group) => (
+                          <div key={group.key} className="user-priority-group">
+                            <div className="user-priority-heading">
+                              <span className={getPriorityBadgeClass(group.key)}>{group.title}</span>
+                              <span>{group.users.length} user{group.users.length === 1 ? '' : 's'}</span>
+                            </div>
+                            {group.users.length === 0 ? (
+                              <div className="user-issue-empty">No users in this priority group.</div>
+                            ) : (
+                              group.users.map((siteUser) => {
+                                const isExpanded = Boolean(expandedUsers[siteUser.id]);
+                                const initials = `${siteUser.firstname?.charAt(0) || 'U'}${siteUser.lastname?.charAt(0) || ''}`.toUpperCase();
+                                const fullName = getFullName(siteUser);
+                                const displayedIssues = siteUser.filteredIssues ?? siteUser.issues ?? [];
+                                const displayedIssueCount = siteUser.filteredIssueCount ?? siteUser.issueCount ?? 0;
+
+                                return (
+                                  <div key={siteUser.id} className="user-group">
+                                    <button
+                                      type="button"
+                                      className="user-row"
+                                      onClick={() => toggleUserIssues(siteUser.id)}
+                                      aria-expanded={isExpanded}
+                                    >
+                                      <div className="user-avatar">{initials}</div>
+                                      <div className="user-info">
+                                        <div className="user-name">{fullName}</div>
+                                        <div className="user-email">{siteUser.email}</div>
+                                      </div>
+                                      <span className={`badge ${siteUser.role === 'ADMIN' ? 'high' : 'low'}`}>{siteUser.role}</span>
+                                      <div className="user-issue-count">{displayedIssueCount} issue{displayedIssueCount === 1 ? '' : 's'}</div>
+                                      <div className="user-chevron">{isExpanded ? '-' : '+'}</div>
+                                    </button>
+
+                                    {isExpanded && (
+                                      <div className="user-issues">
+                                        {displayedIssues.length === 0 ? (
+                                          <div className="user-issue-empty">No issues match the current filters.</div>
+                                        ) : (
+                                          displayedIssues.map((issue) => (
+                                            <button
+                                              type="button"
+                                              key={issue.id}
+                                              className="user-issue-row"
+                                              onClick={() => handleViewIssue(issue)}
+                                            >
+                                              <div className="issue-id">#{issue.displayId ?? issue.id}</div>
+                                              <div className="issue-title-cell">
+                                                <div className="issue-title-text">{issue.title}</div>
+                                                <div className="issue-desc">{issue.description?.substring(0, 100)}...</div>
+                                              </div>
+                                              <span className="badge low">{issue.category}</span>
+                                              <span className={getPriorityBadgeClass(issue.priority)}>
+                                                {getPriorityDisplay(issue.priority)}
+                                              </span>
+                                              <span className={getStatusBadgeClass(issue.status)}>
+                                                {getStatusDisplay(issue.status)}
+                                              </span>
+                                            </button>
+                                          ))
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        filteredUsers.map((siteUser) => {
                       const isExpanded = Boolean(expandedUsers[siteUser.id]);
                       const initials = `${siteUser.firstname?.charAt(0) || 'U'}${siteUser.lastname?.charAt(0) || ''}`.toUpperCase();
-                      const fullName = `${siteUser.firstname || 'User'} ${siteUser.lastname || ''}`.trim();
+                      const fullName = getFullName(siteUser);
+                      const displayedIssues = siteUser.filteredIssues ?? siteUser.issues ?? [];
+                      const displayedIssueCount = siteUser.filteredIssueCount ?? siteUser.issueCount ?? 0;
 
                       return (
                         <div key={siteUser.id} className="user-group">
@@ -264,16 +497,16 @@ const DashboardScreen = () => {
                               <div className="user-email">{siteUser.email}</div>
                             </div>
                             <span className={`badge ${siteUser.role === 'ADMIN' ? 'high' : 'low'}`}>{siteUser.role}</span>
-                            <div className="user-issue-count">{siteUser.issueCount} issue{siteUser.issueCount === 1 ? '' : 's'}</div>
+                            <div className="user-issue-count">{displayedIssueCount} issue{displayedIssueCount === 1 ? '' : 's'}</div>
                             <div className="user-chevron">{isExpanded ? '-' : '+'}</div>
                           </button>
 
                           {isExpanded && (
                             <div className="user-issues">
-                              {siteUser.issues.length === 0 ? (
-                                <div className="user-issue-empty">No issues submitted by this user.</div>
+                              {displayedIssues.length === 0 ? (
+                                <div className="user-issue-empty">No issues match the current filters.</div>
                               ) : (
-                                siteUser.issues.map((issue) => (
+                                displayedIssues.map((issue) => (
                                   <button
                                     type="button"
                                     key={issue.id}
@@ -299,7 +532,9 @@ const DashboardScreen = () => {
                           )}
                         </div>
                       );
-                    })
+                        })
+                      )}
+                    </>
                   )}
                 </div>
               ) : (
@@ -308,7 +543,7 @@ const DashboardScreen = () => {
                 <input
                   type="text"
                   className="search-input"
-                  placeholder="🔍 Search issues by title, description…"
+                  placeholder=" Search issues by title, description…"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />

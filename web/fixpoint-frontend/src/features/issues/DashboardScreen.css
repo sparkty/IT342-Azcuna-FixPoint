@@ -373,6 +373,22 @@
   overflow: hidden;
 }
 
+.filter-bar.users-filter-bar {
+  padding: 16px;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-wrap: wrap;
+}
+
+.users-filter-bar .search-input {
+  min-width: 240px;
+}
+
+.users-filter-bar .filter-select {
+  min-width: 130px;
+}
+
 .panel-empty,
 .user-issue-empty {
   padding: 28px;
@@ -383,6 +399,26 @@
 }
 
 .user-group + .user-group {
+  border-top: 1px solid var(--border);
+}
+
+.user-priority-group + .user-priority-group {
+  border-top: 1px solid var(--border);
+}
+
+.user-priority-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  background: var(--surface2);
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.user-priority-group .user-group + .user-group {
   border-top: 1px solid var(--border);
 }
 
@@ -665,6 +701,11 @@
   
   .filter-select {
     flex: 1;
+  }
+
+  .users-filter-bar .search-input,
+  .users-filter-bar .filter-select {
+    min-width: 160px;
   }
   
   .sidebar {
