@@ -403,6 +403,35 @@
   background: var(--border);
 }
 
+.btn-oauth-google {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-oauth-google:hover {
+  background: var(--border);
+  border-color: var(--text3);
+}
+
+.btn-oauth-google:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .email-notice {
   font-size: 10px;
   color: var(--text3);

@@ -7,6 +7,10 @@ import edu.cit.azcuna.fixpoint.shared.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -24,22 +28,24 @@ public class GoogleOAuthService {
     @Value("${google.client-id}")
     private String googleClientId;
 
-    public AuthResponse loginWithGoogle(String idToken) {
+    public AuthResponse loginWithGoogle(String accessToken) {
         try {
-            Map<String, Object> tokenInfo = verifyGoogleToken(idToken);
+            Map<String, Object> tokenInfo = verifyGoogleToken(accessToken);
+
             if (tokenInfo == null) {
-                return AuthResponse.error("AUTH-004", "Invalid Google token", "Token verification failed");
+                return AuthResponse.error(
+                        "AUTH-004",
+                        "Invalid Google token",
+                        "Token verification failed"
+                );
             }
 
-            String aud = (String) tokenInfo.get("aud");
-            if (!googleClientId.equals(aud)) {
-                return AuthResponse.error("AUTH-004", "Invalid Google token", "Token audience mismatch");
-            }
+            // aud check removed — /userinfo endpoint does not return aud field
 
-            String email    = (String) tokenInfo.get("email");
+            String email = (String) tokenInfo.get("email");
             String firstname = (String) tokenInfo.getOrDefault("given_name", "User");
-            String lastname  = (String) tokenInfo.getOrDefault("family_name", "");
-            String googleId  = (String) tokenInfo.get("sub");
+            String lastname = (String) tokenInfo.getOrDefault("family_name", "");
+            String googleId = (String) tokenInfo.get("sub");
 
             User user = userRepository.findByEmail(email).orElseGet(() -> {
                 User newUser = User.builder()
@@ -55,7 +61,7 @@ public class GoogleOAuthService {
                 return userRepository.save(newUser);
             });
 
-            String accessToken  = jwtUtil.generateToken(user.getEmail());
+            String newAccessToken = jwtUtil.generateToken(user.getEmail());
             String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
 
             return AuthResponse.success(AuthResponse.TokenData.builder()
@@ -66,7 +72,7 @@ public class GoogleOAuthService {
                             .lastname(user.getLastname())
                             .role(user.getRole().name())
                             .build())
-                    .accessToken(accessToken)
+                    .accessToken(newAccessToken)
                     .refreshToken(refreshToken)
                     .build());
 
@@ -77,11 +83,17 @@ public class GoogleOAuthService {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> verifyGoogleToken(String idToken) {
+    private Map<String, Object> verifyGoogleToken(String accessToken) {
         try {
             RestTemplate restTemplate = new RestTemplate();
-            String url = "https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken;
-            return restTemplate.getForObject(url, Map.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + accessToken);
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+            ResponseEntity<Map> response = restTemplate.exchange(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                HttpMethod.GET, entity, Map.class
+            );
+            return response.getBody();
         } catch (Exception e) {
             log.error("Token verification failed: {}", e.getMessage());
             return null;

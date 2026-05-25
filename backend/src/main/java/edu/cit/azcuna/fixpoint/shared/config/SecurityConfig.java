@@ -65,10 +65,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-                config.setAllowedOrigins(List.of(
+        if (allowedOrigins != null && !allowedOrigins.trim().isEmpty()) {
+            config.setAllowedOrigins(List.of(allowedOrigins.split(",")));
+        } else {
+            config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "https://fix-point-issue-management.vercel.app"
-        ));
+            ));
+        }
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

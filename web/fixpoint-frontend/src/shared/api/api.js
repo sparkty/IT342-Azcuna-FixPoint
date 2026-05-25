@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://it342-azcuna-fixpoint-production-6dbf.up.railway.app/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL 
+    ? `${import.meta.env.VITE_API_BASE_URL}/api/v1` 
+    : 'http://localhost:8080/api/v1',
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' }
 });
@@ -19,7 +21,9 @@ api.interceptors.response.use(
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
-      window.location.href = '/';
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      }
     }
     return Promise.reject(error);
   }
