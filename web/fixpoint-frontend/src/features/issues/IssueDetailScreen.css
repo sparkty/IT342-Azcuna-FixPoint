@@ -413,10 +413,16 @@
   border-color: var(--accent);
 }
 
-/* Sticky Preview */
-.sticky-preview {
+/* Sticky Sidebar Column */
+.detail-sidebar {
   position: sticky;
   top: 16px;
+  align-self: start;
+}
+
+/* Sticky Preview */
+.sticky-preview {
+  /* position and stack is managed by parent .detail-sidebar to prevent overlapping issues */
 }
 
 .preview-content {

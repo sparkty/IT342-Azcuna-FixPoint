@@ -8,6 +8,15 @@ import TopNav from '../../shared/components/TopNav';
 
 const LoginRegisterScreen = () => {
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    const user = localStorage.getItem('user');
+    if (token && user) {
+      navigate('/dashboard');
+    }
+  }, [navigate]);
+
   const [activeTab, setActiveTab] = useState('login');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

@@ -500,7 +500,7 @@ const IssueDetailScreen = () => {
                   </div>
 
                   {/* Right Column - Sidebar Info */}
-                  <div>
+                  <div className="detail-sidebar">
                     <div className="form-card sticky-preview">
                       <div className="form-card-title">Issue Status</div>
                       <div className="preview-content">
