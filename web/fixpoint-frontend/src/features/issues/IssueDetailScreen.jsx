@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { issueService, deleteRequestService, commentService } from '../../shared/api/api';
+import api, { issueService, deleteRequestService, commentService } from '../../shared/api/api';
 import './IssueDetailScreen.css';
 import Sidebar from '../../shared/components/Sidebar';
 import TopNav from '../../shared/components/TopNav';
@@ -16,10 +16,9 @@ const IssueDetailScreen = () => {
   const [commentLoading, setCommentLoading] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('');
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const fileUrl =
     issue?.attachment?.url
-      ? `${baseUrl}${issue.attachment.url}`
+      ? `${api.defaults.baseURL}/files/${issue.attachment.url}`
       : null;
 
   const [deleteRequest, setDeleteRequest] = useState(null);   // pending request data
@@ -382,7 +381,7 @@ const IssueDetailScreen = () => {
                                 />
 
                                 <a
-                                  href={`${import.meta.env.VITE_API_BASE_URL}/api/v1/files/${issue.attachment.url}`}
+                                  href={fileUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="attachment-chip"
@@ -399,7 +398,7 @@ const IssueDetailScreen = () => {
                             ) : (
                               /* Other files (PDF, docs, etc.) */
                               <a
-                                href={`${import.meta.env.VITE_API_BASE_URL}/api/v1/files/${issue.attachment.url}`}
+                                href={fileUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="attachment-chip"
