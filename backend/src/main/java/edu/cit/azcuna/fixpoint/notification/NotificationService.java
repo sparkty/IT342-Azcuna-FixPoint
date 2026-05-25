@@ -116,7 +116,7 @@ public class NotificationService {
 
     // ── Delete all read notifications ─────────────────────────────────────────
     public void deleteAllReadNotifications(Long userId) {
-        notificationRepository.deleteByUserIdAndIsReadTrue(userId);
+        notificationRepository.deleteReadForUser(userId);
     }
 
     // ── Internal helper ───────────────────────────────────────────────────────

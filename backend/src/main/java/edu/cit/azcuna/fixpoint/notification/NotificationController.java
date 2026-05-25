@@ -53,17 +53,12 @@ public class NotificationController {
     }
 
     @DeleteMapping("/read")
-    public ResponseEntity<?> deleteAllRead() {
+    public ResponseEntity<Map<String, Object>> deleteAllRead() {
         User user = getCurrentUser();
 
         notificationService.deleteAllReadNotifications(user.getId());
 
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "data", null,
-                "error", null,
-                "timestamp", Instant.now().toString()
-        ));
+        return ResponseEntity.ok(success(null));
     }
 
     private Map<String, Object> success(Object data) {

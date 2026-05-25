@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import App from './App.jsx';
 import { ToastProvider } from './shared/components/Toast.jsx';
+import './index.css';
 import './features/auth/LoginRegisterScreen.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(

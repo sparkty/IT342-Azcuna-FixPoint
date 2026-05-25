@@ -5,6 +5,7 @@ import edu.cit.azcuna.fixpoint.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -21,8 +22,10 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     @Modifying
     @Transactional
     @Query("UPDATE Notification n SET n.isRead = true WHERE n.user = :user AND n.isRead = false")
-    void markAllAsReadForUser(User user);
+    void markAllAsReadForUser(@Param("user") User user);
+
     @Modifying
     @Transactional
-    void deleteByUserIdAndIsReadTrue(Long userId);
+    @Query("DELETE FROM Notification n WHERE n.user.id = :userId AND n.isRead = true")
+    void deleteReadForUser(@Param("userId") Long userId);
 }

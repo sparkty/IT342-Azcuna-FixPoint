@@ -13,18 +13,33 @@ const CreateIssueScreen = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [location, setLocation] = useState(null);
+  const [locationStatus, setLocationStatus] = useState('detecting');
 
   useEffect(() => {
-    fetch('https://freeipapi.com/api/json')
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 6000);
+
+    fetch('https://free.freeipapi.com/api/json', { signal: controller.signal })
       .then(res => res.json())
       .then(data => {
-        if (data.cityName) {
+        if (data.cityName || data.regionName) {
           setLocation({ city: data.cityName, region: data.regionName });
+          setLocationStatus('found');
+        } else {
+          setLocationStatus('unavailable');
         }
       })
       .catch(() => {
-        // silently fail — location hint is optional
+        setLocationStatus('unavailable');
+      })
+      .finally(() => {
+        window.clearTimeout(timeoutId);
       });
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeoutId);
+    };
   }, []);
   
   const [formData, setFormData] = useState({
@@ -107,6 +122,7 @@ const CreateIssueScreen = () => {
     
     setLoading(true);
     setError('');
+    setSuccess('');
     
     try {
       const formPayload = new FormData();
@@ -123,7 +139,6 @@ const CreateIssueScreen = () => {
       const response = await issueService.createIssue(formPayload);
       const created = response.data.data;
 
-      setSuccess('Issue created successfully!');
       showToast('Issue created successfully!', 'success');
       setFormData({ title: '', category: '', priority: 'MEDIUM', description: '' });
       setAttachments([]);
@@ -218,8 +233,10 @@ const CreateIssueScreen = () => {
 
               <div className="mobile-note">
                 🌐 {location
-                  ? `Reporting from: ${location.city}, ${location.region}`
-                  : 'Detecting your location...'}
+                  ? `Reporting from: ${[location.city, location.region].filter(Boolean).join(', ')}`
+                  : locationStatus === 'detecting'
+                    ? 'Detecting your location...'
+                    : 'Location unavailable'}
               </div>
 
               <div className="issue-create-layout">

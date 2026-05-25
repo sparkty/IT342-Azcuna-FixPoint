@@ -524,10 +524,11 @@
   }
   
   .table-header, .issue-row {
-    grid-template-columns: 40px 1fr 100px 80px 90px 70px 60px;
+    grid-template-columns: 40px 1fr 100px 80px 90px 70px;
   }
+}
 
-  .page-body {
+.page-body {
   padding: 24px 28px;
   max-width: 1400px; /* Prevents content from stretching too wide on large screens */
   margin: 0 auto; /* Centers the content */
@@ -689,6 +690,4 @@
   .issues-table {
     overflow-x: auto;
   }
-}
-
 }

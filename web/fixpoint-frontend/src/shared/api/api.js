@@ -8,6 +8,39 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' }
 });
 
+export const clearAuthState = () => {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('user');
+};
+
+export const isStoredAuthValid = () => {
+  const token = localStorage.getItem('accessToken');
+  const user = localStorage.getItem('user');
+
+  if (!token || !user) return false;
+
+  try {
+    JSON.parse(user);
+
+    const [, payload] = token.split('.');
+    if (!payload) return false;
+
+    const normalizedPayload = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const paddedPayload = normalizedPayload.padEnd(
+      normalizedPayload.length + ((4 - (normalizedPayload.length % 4)) % 4),
+      '='
+    );
+    const decodedPayload = JSON.parse(window.atob(paddedPayload));
+
+    if (!decodedPayload.exp) return false;
+
+    return decodedPayload.exp * 1000 > Date.now();
+  } catch {
+    return false;
+  }
+};
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('accessToken');
   if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -18,9 +51,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
+      clearAuthState();
       if (window.location.pathname !== '/') {
         window.location.href = '/';
       }
