@@ -60,22 +60,6 @@ public class EmailService {
     }
 
     @Async
-    public void sendCommentEmail(String toEmail, String firstname,
-                                 Long issueDisplayId, String issueTitle,
-                                 String authorName, String commentContent) {
-        Context context = new Context();
-        context.setVariable("firstname", firstname);
-        context.setVariable("issueId", issueDisplayId);
-        context.setVariable("issueTitle", issueTitle);
-        context.setVariable("authorName", authorName);
-        context.setVariable("commentContent", commentContent);
-        context.setVariable("issueUrl", getNormalizedFrontendUrl() + "/issue/" + issueDisplayId);
-
-        String html = templateEngine.process("email/issue-comment", context);
-        sendHtmlEmail(toEmail, "FixPoint - New Admin Comment on Issue #" + issueDisplayId, html);
-    }
-
-    @Async
     public void sendPasswordResetEmail(String toEmail, String firstname, String token) {
         Context context = new Context();
         context.setVariable("firstname", firstname);

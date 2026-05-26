@@ -7,7 +7,6 @@ import edu.cit.azcuna.fixpoint.entity.IssueComment;
 import edu.cit.azcuna.fixpoint.entity.User;
 import edu.cit.azcuna.fixpoint.repository.IssueCommentRepository;
 import edu.cit.azcuna.fixpoint.repository.IssueRepository;
-import edu.cit.azcuna.fixpoint.email.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -23,7 +22,6 @@ public class IssueCommentService {
     private final IssueRepository issueRepository;
     private final IssueCommentRepository issueCommentRepository;
     private final NotificationService notificationService;
-    private final EmailService emailService;
 
     @Transactional(readOnly = true)
     public List<IssueCommentResponse> list(Long issueId, User currentUser) {
@@ -45,21 +43,6 @@ public class IssueCommentService {
                 .build());
 
         notificationService.createCommentNotification(issue, currentUser);
-
-        // If comment author is ADMIN, and issue owner is NOT the admin, notify issue owner via email
-        if (currentUser.getRole() == User.Role.ADMIN && !issue.getUser().getId().equals(currentUser.getId())) {
-            if (!Boolean.FALSE.equals(issue.getUser().getEmailNotificationsEnabled())) {
-                Long displayId = issueRepository.countByUserAndIdLessThanEqual(issue.getUser(), issue.getId());
-                emailService.sendCommentEmail(
-                        issue.getUser().getEmail(),
-                        issue.getUser().getFirstname(),
-                        displayId,
-                        issue.getTitle(),
-                        currentUser.getFirstname() + " " + currentUser.getLastname(),
-                        comment.getContent()
-                );
-            }
-        }
 
         return IssueCommentResponse.from(comment);
     }
