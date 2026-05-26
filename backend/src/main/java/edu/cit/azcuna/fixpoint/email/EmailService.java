@@ -12,6 +12,12 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -28,6 +34,9 @@ public class EmailService {
 
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
+
+    @Value("${resend.api-key:${RESEND_API_KEY:}}")
+    private String resendApiKey;
 
     private String getNormalizedFrontendUrl() {
         if (frontendUrl == null) return "http://localhost:5173";
@@ -78,8 +87,13 @@ public class EmailService {
     }
 
     private void sendHtmlEmail(String to, String subject, String htmlBody) {
+        if (resendApiKey != null && !resendApiKey.trim().isEmpty()) {
+            sendViaResend(to, subject, htmlBody);
+            return;
+        }
+
         try {
-            log.info("Preparing email to {}", to);
+            log.info("Preparing SMTP email to {}", to);
 
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -89,11 +103,11 @@ public class EmailService {
             helper.setSubject(subject);
             helper.setText(htmlBody, true);
 
-            log.info("Sending email to {}", to);
+            log.info("Sending SMTP email to {}", to);
 
             mailSender.send(message);
 
-            log.info("Email successfully sent to {}", to);
+            log.info("Email successfully sent via SMTP to {}", to);
 
         }catch (Exception e) {
             log.error("=============================================================");
@@ -106,6 +120,58 @@ public class EmailService {
             log.error("Full Exception Stack Trace:", e);
             log.error("=============================================================");
             throw new RuntimeException(e);
+        }
+    }
+
+    private void sendViaResend(String to, String subject, String htmlBody) {
+        try {
+            log.info("Sending email via Resend API to {}", to);
+
+            // Escape parameters carefully for JSON construction
+            String escapedFromName = fromName.replace("\\", "\\\\").replace("\"", "\\\"");
+            String escapedFromEmail = fromEmail.replace("\\", "\\\\").replace("\"", "\\\"");
+            String escapedTo = to.replace("\\", "\\\\").replace("\"", "\\\"");
+            String escapedSubject = subject.replace("\\", "\\\\").replace("\"", "\\\"");
+            
+            String escapedHtml = htmlBody
+                    .replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("\n", "\\n")
+                    .replace("\r", "\\r")
+                    .replace("\t", "\\t");
+
+            String jsonPayload = String.format(
+                    "{\"from\":\"%s <%s>\",\"to\":[\"%s\"],\"subject\":\"%s\",\"html\":\"%s\"}",
+                    escapedFromName, escapedFromEmail, escapedTo, escapedSubject, escapedHtml
+            );
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.resend.com/emails"))
+                    .header("Authorization", "Bearer " + resendApiKey)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonPayload, StandardCharsets.UTF_8))
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                log.info("Email successfully sent via Resend API to {}! Response: {}", to, response.body());
+            } else {
+                throw new RuntimeException("Resend API returned error status " + response.statusCode() + ": " + response.body());
+            }
+
+        } catch (Exception e) {
+            log.error("=============================================================");
+            log.error("               FIXPOINT RESEND API EMAIL DISPATCH FAILURE    ");
+            log.error("=============================================================");
+            log.error("Recipient: {}", to);
+            log.error("Subject: {}", subject);
+            log.error("From Email: {}", fromEmail);
+            log.error("Error Message: {}", e.getMessage());
+            log.error("Full Exception Stack Trace:", e);
+            log.error("=============================================================");
+            throw new RuntimeException("Resend email dispatch failed: " + e.getMessage(), e);
         }
     }
 }
