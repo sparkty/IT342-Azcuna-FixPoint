@@ -6,12 +6,6 @@ spring:
     port: 587
     username: placeholder
     password: placeholder
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
 
 app:
   mail:

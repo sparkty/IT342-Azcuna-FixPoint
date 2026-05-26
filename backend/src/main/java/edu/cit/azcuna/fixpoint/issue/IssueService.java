@@ -92,6 +92,7 @@ public class IssueService {
         return IssueResponse.from(issue, getDisplayId(issue), true);
     }
 
+    @Transactional
     public IssueResponse update(Long routeId, UpdateIssueRequest request, User currentUser) {
         Issue issue = findAndAuthorize(routeId, currentUser);
         boolean isAdmin = currentUser.getRole() == User.Role.ADMIN;

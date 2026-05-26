@@ -66,6 +66,8 @@ public class EmailService {
 
     private void sendHtmlEmail(String to, String subject, String htmlBody) {
         try {
+            log.info("Preparing email to {}", to);
+
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
@@ -74,11 +76,14 @@ public class EmailService {
             helper.setSubject(subject);
             helper.setText(htmlBody, true);
 
+            log.info("Sending email to {}", to);
+
             mailSender.send(message);
-            log.info("Email sent to {}", to);
+
+            log.info("Email successfully sent to {}", to);
+
         } catch (Exception e) {
-            log.error("Failed to send email to {}: {}", to, e.getMessage());
-            // swallowed — email failure won't crash registration or issue update
+            log.error("Failed to send email to {}", to, e);
         }
     }
 }

@@ -100,6 +100,7 @@ public class AuthService {
         }
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public AuthResponse forgotPassword(ForgotPasswordRequest request) {
         userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
             passwordResetTokenRepository.deleteByUser(user);
