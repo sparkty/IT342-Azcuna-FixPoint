@@ -145,6 +145,21 @@ public class AuthService {
         return AuthResponse.success("Password reset successfully. You can now sign in.");
     }
 
+    public AuthResponse testEmail(String toEmail) {
+        try {
+            emailService.sendTestEmail(
+                    toEmail,
+                    "FixPoint - SMTP Diagnostics Test",
+                    "<h1>SMTP Connection Successful</h1><p>This is a synchronous test email dispatched by the FixPoint diagnostics endpoint.</p>"
+            );
+            return AuthResponse.success("SMTP connection and authorization are fully successful! Test email sent to " + toEmail);
+        } catch (Exception e) {
+            String errorMsg = e.getMessage();
+            String rootCause = e.getCause() != null ? e.getCause().getMessage() : "Unknown Root Cause";
+            return AuthResponse.error("SMTP-FAIL", "Email sending failed", "Error: " + errorMsg + " | Cause: " + rootCause);
+        }
+    }
+
     private AuthResponse.UserData toUserData(User user) {
         return AuthResponse.UserData.builder()
                 .id(user.getId())

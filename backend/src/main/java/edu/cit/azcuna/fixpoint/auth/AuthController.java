@@ -69,4 +69,11 @@ public class AuthController {
         int status = response.isSuccess() ? 200 : 401;
         return ResponseEntity.status(status).body(response);
     }
+
+    @GetMapping("/test-email")
+    public ResponseEntity<AuthResponse> testEmail(@RequestParam String email) {
+        AuthResponse response = authService.testEmail(email);
+        int status = response.isSuccess() ? 200 : 500;
+        return ResponseEntity.status(status).body(response);
+    }
 }

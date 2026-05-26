@@ -35,6 +35,7 @@ public class EmailService {
     }
 
     
+    @Async
     public void sendWelcomeEmail(String toEmail, String firstname) {
         Context context = new Context();
         context.setVariable("firstname", firstname);
@@ -44,7 +45,7 @@ public class EmailService {
         sendHtmlEmail(toEmail, "Welcome to FixPoint!", html);
     }
 
-    
+    @Async
     public void sendStatusUpdateEmail(String toEmail, String firstname,
                                       Long issueDisplayId, String issueTitle,
                                       String newStatus) {
@@ -59,7 +60,7 @@ public class EmailService {
         sendHtmlEmail(toEmail, "FixPoint - Issue #" + issueDisplayId + " Status Updated", html);
     }
 
-    
+    @Async
     public void sendPasswordResetEmail(String toEmail, String firstname, String token) {
         Context context = new Context();
         context.setVariable("firstname", firstname);
@@ -67,6 +68,13 @@ public class EmailService {
 
         String html = templateEngine.process("email/password-reset", context);
         sendHtmlEmail(toEmail, "FixPoint - Reset your password", html);
+    }
+
+    /**
+     * Synchronous email sending method for SMTP diagnostics and testing.
+     */
+    public void sendTestEmail(String toEmail, String subject, String body) {
+        sendHtmlEmail(toEmail, subject, body);
     }
 
     private void sendHtmlEmail(String to, String subject, String htmlBody) {
@@ -88,7 +96,15 @@ public class EmailService {
             log.info("Email successfully sent to {}", to);
 
         }catch (Exception e) {
-            log.error("EMAIL FAILED FOR {}", to, e);
+            log.error("=============================================================");
+            log.error("                  FIXPOINT EMAIL DISPATCH FAILURE            ");
+            log.error("=============================================================");
+            log.error("Recipient: {}", to);
+            log.error("Subject: {}", subject);
+            log.error("From Email: {}", fromEmail);
+            log.error("Error Message: {}", e.getMessage());
+            log.error("Full Exception Stack Trace:", e);
+            log.error("=============================================================");
             throw new RuntimeException(e);
         }
     }
