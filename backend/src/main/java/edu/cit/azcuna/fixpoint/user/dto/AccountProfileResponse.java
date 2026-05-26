@@ -44,7 +44,7 @@ public class AccountProfileResponse {
         String fullName = (user.getFirstname() + " " + user.getLastname()).trim();
         String profilePictureUrl = user.getProfilePictureFilename() == null
                 ? null
-                : "/files/" + user.getProfilePictureFilename();
+                : "/api/v1/files/" + user.getProfilePictureFilename();
 
         return AccountProfileResponse.builder()
                 .id(user.getId())

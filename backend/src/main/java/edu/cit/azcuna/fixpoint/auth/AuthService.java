@@ -143,7 +143,7 @@ public class AuthService {
                 .firstname(user.getFirstname())
                 .lastname(user.getLastname())
                 .role(user.getRole().name())
-                .profilePictureUrl(user.getProfilePictureFilename() == null ? null : "/files/" + user.getProfilePictureFilename())
+                .profilePictureUrl(user.getProfilePictureFilename() == null ? null : "/api/v1/files/" + user.getProfilePictureFilename())
                 .build();
     }
 }
