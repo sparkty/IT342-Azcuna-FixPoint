@@ -102,20 +102,29 @@ public class AuthService {
 
     @org.springframework.transaction.annotation.Transactional
     public AuthResponse forgotPassword(ForgotPasswordRequest request) {
-        userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
-            passwordResetTokenRepository.deleteByUser(user);
 
-            PasswordResetToken resetToken = PasswordResetToken.builder()
-                    .user(user)
-                    .token(UUID.randomUUID().toString())
-                    .expiresAt(LocalDateTime.now().plusHours(1))
-                    .build();
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
 
-            passwordResetTokenRepository.save(resetToken);
-            emailService.sendPasswordResetEmail(user.getEmail(), user.getFirstname(), resetToken.getToken());
-        });
+        if (user == null) {
+            return AuthResponse.success("If an account exists for that email, a password reset link has been sent.");
+        }
 
-        return AuthResponse.success("If an account exists for that email, a password reset link has been sent.");
+        PasswordResetToken resetToken = PasswordResetToken.builder()
+                .user(user)
+                .token(UUID.randomUUID().toString())
+                .expiresAt(LocalDateTime.now().plusHours(1))
+                .used(false)
+                .build();
+
+        passwordResetTokenRepository.save(resetToken);
+
+        emailService.sendPasswordResetEmail(
+                user.getEmail(),
+                user.getFirstname(),
+                resetToken.getToken()
+        );
+
+        return AuthResponse.success("OK");
     }
 
     public AuthResponse resetPassword(ResetPasswordRequest request) {
