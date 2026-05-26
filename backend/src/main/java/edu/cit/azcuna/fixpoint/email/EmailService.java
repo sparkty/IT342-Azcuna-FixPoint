@@ -29,11 +29,16 @@ public class EmailService {
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
 
+    private String getNormalizedFrontendUrl() {
+        if (frontendUrl == null) return "http://localhost:5173";
+        return frontendUrl.replaceAll("/+$", "");
+    }
+
     @Async
     public void sendWelcomeEmail(String toEmail, String firstname) {
         Context context = new Context();
         context.setVariable("firstname", firstname);
-        context.setVariable("loginUrl", "http://localhost:5173/login");
+        context.setVariable("loginUrl", getNormalizedFrontendUrl() + "/login");
 
         String html = templateEngine.process("email/welcome", context);
         sendHtmlEmail(toEmail, "Welcome to FixPoint!", html);
@@ -48,7 +53,7 @@ public class EmailService {
         context.setVariable("issueId", issueDisplayId);
         context.setVariable("issueTitle", issueTitle);
         context.setVariable("newStatus", newStatus);
-        context.setVariable("issueUrl", frontendUrl + "/issue/" + issueDisplayId);
+        context.setVariable("issueUrl", getNormalizedFrontendUrl() + "/issue/" + issueDisplayId);
 
         String html = templateEngine.process("email/issue-status-update", context);
         sendHtmlEmail(toEmail, "FixPoint - Issue #" + issueDisplayId + " Status Updated", html);
@@ -64,7 +69,7 @@ public class EmailService {
         context.setVariable("issueTitle", issueTitle);
         context.setVariable("authorName", authorName);
         context.setVariable("commentContent", commentContent);
-        context.setVariable("issueUrl", frontendUrl + "/issue/" + issueDisplayId);
+        context.setVariable("issueUrl", getNormalizedFrontendUrl() + "/issue/" + issueDisplayId);
 
         String html = templateEngine.process("email/issue-comment", context);
         sendHtmlEmail(toEmail, "FixPoint - New Admin Comment on Issue #" + issueDisplayId, html);
@@ -74,7 +79,7 @@ public class EmailService {
     public void sendPasswordResetEmail(String toEmail, String firstname, String token) {
         Context context = new Context();
         context.setVariable("firstname", firstname);
-        context.setVariable("resetUrl", frontendUrl + "/?resetToken=" + token);
+        context.setVariable("resetUrl", getNormalizedFrontendUrl() + "/?resetToken=" + token);
 
         String html = templateEngine.process("email/password-reset", context);
         sendHtmlEmail(toEmail, "FixPoint - Reset your password", html);
