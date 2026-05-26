@@ -32,6 +32,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (path.startsWith("/api/v1/files/")
                 || path.startsWith("/api/v1/auth/")) {
+
+            SecurityContextHolder.clearContext();
+            
             filterChain.doFilter(request, response);
             return;
         }
