@@ -34,7 +34,7 @@ public class EmailService {
         return frontendUrl.replaceAll("/+$", "");
     }
 
-    @Async
+    
     public void sendWelcomeEmail(String toEmail, String firstname) {
         Context context = new Context();
         context.setVariable("firstname", firstname);
@@ -44,7 +44,7 @@ public class EmailService {
         sendHtmlEmail(toEmail, "Welcome to FixPoint!", html);
     }
 
-    @Async
+    
     public void sendStatusUpdateEmail(String toEmail, String firstname,
                                       Long issueDisplayId, String issueTitle,
                                       String newStatus) {
@@ -59,7 +59,7 @@ public class EmailService {
         sendHtmlEmail(toEmail, "FixPoint - Issue #" + issueDisplayId + " Status Updated", html);
     }
 
-    @Async
+    
     public void sendPasswordResetEmail(String toEmail, String firstname, String token) {
         Context context = new Context();
         context.setVariable("firstname", firstname);
@@ -87,8 +87,9 @@ public class EmailService {
 
             log.info("Email successfully sent to {}", to);
 
-        } catch (Exception e) {
-            log.error("Failed to send email to {}", to, e);
+        catch (Exception e) {
+            log.error("EMAIL FAILED FOR {}", to, e);
+            throw new RuntimeException(e);
         }
     }
 }
