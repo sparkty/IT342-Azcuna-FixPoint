@@ -48,10 +48,26 @@ public class EmailService {
         context.setVariable("issueId", issueDisplayId);
         context.setVariable("issueTitle", issueTitle);
         context.setVariable("newStatus", newStatus);
-        context.setVariable("issueUrl", "http://localhost:5173/issue/" + issueDisplayId);
+        context.setVariable("issueUrl", frontendUrl + "/issue/" + issueDisplayId);
 
         String html = templateEngine.process("email/issue-status-update", context);
         sendHtmlEmail(toEmail, "FixPoint - Issue #" + issueDisplayId + " Status Updated", html);
+    }
+
+    @Async
+    public void sendCommentEmail(String toEmail, String firstname,
+                                 Long issueDisplayId, String issueTitle,
+                                 String authorName, String commentContent) {
+        Context context = new Context();
+        context.setVariable("firstname", firstname);
+        context.setVariable("issueId", issueDisplayId);
+        context.setVariable("issueTitle", issueTitle);
+        context.setVariable("authorName", authorName);
+        context.setVariable("commentContent", commentContent);
+        context.setVariable("issueUrl", frontendUrl + "/issue/" + issueDisplayId);
+
+        String html = templateEngine.process("email/issue-comment", context);
+        sendHtmlEmail(toEmail, "FixPoint - New Admin Comment on Issue #" + issueDisplayId, html);
     }
 
     @Async

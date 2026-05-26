@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useGoogleLogin } from '@react-oauth/google';
 import { accountService } from '../../shared/api/api';
 import Sidebar from '../../shared/components/Sidebar';
 import TopNav from '../../shared/components/TopNav';
@@ -12,7 +11,7 @@ const ProfileScreen = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState(null);
-  const [form, setForm] = useState({ bio: '', role: 'USER' });
+  const [form, setForm] = useState({ role: 'USER' });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [deleteReason, setDeleteReason] = useState('');
   const [deletionRequests, setDeletionRequests] = useState([]);
@@ -51,7 +50,7 @@ const ProfileScreen = () => {
       const response = await accountService.getProfile();
       const data = response.data.data;
       setProfile(data);
-      setForm({ bio: data.bio || '', role: data.role || 'USER' });
+      setForm({ role: data.role || 'USER' });
       syncStoredUser(data);
       if (data.role === 'ADMIN') {
         const requests = await accountService.getDeletionRequests();
@@ -66,16 +65,11 @@ const ProfileScreen = () => {
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
-    if (form.bio.length > 500) {
-      setError('Bio must be 500 characters or fewer.');
-      return;
-    }
 
     setSaving(true);
     setError('');
     try {
       const response = await accountService.updateProfile({
-        bio: form.bio,
         role: isAdmin ? form.role : profile.role,
       });
       const data = response.data.data;
@@ -137,40 +131,6 @@ const ProfileScreen = () => {
       setMessage('Password changed.');
     } catch (err) {
       showError(err, 'Failed to change password.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const googleLink = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      setSaving(true);
-      setError('');
-      try {
-        const response = await accountService.linkGoogle(tokenResponse.access_token);
-        const data = response.data.data;
-        setProfile(data);
-        setMessage('Google account linked.');
-      } catch (err) {
-        showError(err, 'Failed to link Google account.');
-      } finally {
-        setSaving(false);
-      }
-    },
-    onError: () => setError('Google linking was cancelled or failed.'),
-    flow: 'implicit',
-    ux_mode: 'popup',
-  });
-
-  const handleUnlinkGoogle = async () => {
-    setSaving(true);
-    setError('');
-    try {
-      const response = await accountService.unlinkGoogle();
-      setProfile(response.data.data);
-      setMessage('Google account unlinked.');
-    } catch (err) {
-      showError(err, 'Failed to unlink Google account.');
     } finally {
       setSaving(false);
     }
@@ -282,19 +242,11 @@ const ProfileScreen = () => {
                         <option value="ADMIN">Admin</option>
                       </select>
                     </div>
-                    <div className="account-field">
-                      <label>Description/Bio</label>
-                      <textarea
-                        value={form.bio}
-                        maxLength={500}
-                        onChange={(e) => setForm(prev => ({ ...prev, bio: e.target.value }))}
-                        placeholder="Add a short bio..."
-                      />
-                      <div className="field-hint">{form.bio.length}/500</div>
-                    </div>
-                    <button className="btn-sm primary" disabled={saving} type="submit">
-                      {saving ? 'Saving...' : 'Save Profile'}
-                    </button>
+                    {isAdmin && (
+                      <button className="btn-sm primary" disabled={saving} type="submit">
+                        {saving ? 'Saving...' : 'Save Profile'}
+                      </button>
+                    )}
                   </form>
                 </section>
 
@@ -327,19 +279,6 @@ const ProfileScreen = () => {
                     </div>
                     <button className="btn-sm ghost" disabled={saving} type="submit">Change Password</button>
                   </form>
-
-                  <div className="account-divider" />
-                  <div className="account-action-row">
-                    <div>
-                      <div className="account-action-title">Google Account</div>
-                      <div className="field-hint">{profile.googleLinked ? 'Linked' : 'Not linked'}</div>
-                    </div>
-                    {profile.googleLinked ? (
-                      <button className="btn-sm ghost" disabled={saving} onClick={handleUnlinkGoogle}>Unlink</button>
-                    ) : (
-                      <button className="btn-sm ghost" disabled={saving} onClick={() => googleLink()}>Link</button>
-                    )}
-                  </div>
 
                   <div className="account-divider" />
                   {profile.deletionRequest?.status === 'PENDING' ? (

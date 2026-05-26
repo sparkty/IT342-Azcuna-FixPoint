@@ -50,11 +50,6 @@ const CreateIssueScreen = () => {
   });
   
   const [attachments, setAttachments] = useState([]);
-  
-  const [suggestedTags] = useState([
-    'authentication', 'frontend', 'safari-compat', 
-    'oauth', 'ui-bug', 'critical'
-  ]);
 
   // Navigation handlers
   const handleMyIssues = () => {
@@ -163,13 +158,6 @@ const CreateIssueScreen = () => {
     setSuccess('Draft saved locally!');
     showToast('Draft saved locally!', 'success');
     setTimeout(() => setSuccess(''), 2000);
-  };
-
-  const handleTagClick = (tag) => {
-    setFormData({
-      ...formData,
-      description: formData.description + (formData.description ? `\n[Tag: ${tag}]` : `[Tag: ${tag}]`)
-    });
   };
 
   const handleFileUpload = (e) => {
@@ -296,21 +284,6 @@ const CreateIssueScreen = () => {
                           required
                         />
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="form-card">
-                    <div className="form-card-title">
-                      API Category Suggestions{' '}
-                      <span className="api-badge">— powered by external API</span>
-                    </div>
-                    <div className="api-suggestion-box">
-                      <div className="api-suggestion-title">SUGGESTED TAGS (click to apply)</div>
-                      {suggestedTags.map((tag, index) => (
-                        <span key={index} className="api-tag" onClick={() => handleTagClick(tag)}>
-                          {tag}
-                        </span>
-                      ))}
                     </div>
                   </div>
 
