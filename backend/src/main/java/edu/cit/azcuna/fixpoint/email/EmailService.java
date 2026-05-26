@@ -87,7 +87,7 @@ public class EmailService {
 
             log.info("Email successfully sent to {}", to);
 
-        catch (Exception e) {
+        }catch (Exception e) {
             log.error("EMAIL FAILED FOR {}", to, e);
             throw new RuntimeException(e);
         }
